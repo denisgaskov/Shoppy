@@ -14,25 +14,14 @@ let package = Package(
   ],
   dependencies: [
     .package(path: "../Base"),
-    // .package(path: "../SampleClient"),
-    .package(url: "https://github.com/apple/swift-async-algorithms.git", from: "1.0.0")
+    .package(path: "../ShoppyNetwork")
   ],
   targets: [
-    .target(name: "Auth", dependencies: [.foundation, .ui, .sharedServices]),
-
-    .target(name: "DeveloperTools", dependencies: [.foundation, .ui, .sharedServices]),
-
-    .target(name: "Home", dependencies: [.foundation, .sharedServices, .auth]),
-
-    .target(name: "Launch", dependencies: [
-      .foundation, .sharedServices, "DeveloperTools",
-      .product(name: "AsyncAlgorithms", package: "swift-async-algorithms")
-    ]),
-    .testTarget(name: "LaunchTests", dependencies: ["Launch"]),
+    .target(name: "ProductList", dependencies: [.foundation, .ui, .productsAPI]),
 
     .target(
       name: "Root",
-      dependencies: [.foundation] + ["Launch", .auth, "Home"]
+      dependencies: [.foundation] + ["ProductList"]
     )
   ]
 )
@@ -42,7 +31,5 @@ let package = Package(
 extension Target.Dependency {
   static var foundation: Self { .product(name: "MinimalFoundation", package: "Base") }
   static var ui: Self { .product(name: "MinimalUI", package: "Base") }
-  static var sharedServices: Self { .product(name: "MinimalSharedServices", package: "Base") }
-  static var api: Self { .product(name: "SampleClient", package: "SampleClient") }
-  static var auth: Self { "Auth" }
+  static var productsAPI: Self { .product(name: "ProductsAPI", package: "ShoppyNetwork") }
 }

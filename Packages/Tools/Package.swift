@@ -8,27 +8,10 @@ let package = Package(
   name: "Tools",
   platforms: [.iOS(.v17), .macOS(.v14)],
   products: [
-    .library(name: "Macros", targets: ["Macros"]),
     .plugin(name: "Linter", targets: ["Linter"]),
     .plugin(name: "Formatter", targets: ["Formatter"]),
-    .plugin(name: "Shielder", targets: ["Shielder"])
-  ],
-  dependencies: [
-    .package(url: "https://github.com/swiftlang/swift-syntax.git", from: "600.0.0")
   ],
   targets: [
-    .target(
-      name: "Macros",
-      dependencies: ["MacrosImpl"]
-    ),
-    .macro(
-      name: "MacrosImpl",
-      dependencies: [
-        .product(name: "SwiftSyntaxMacros", package: "swift-syntax"),
-        .product(name: "SwiftCompilerPlugin", package: "swift-syntax")
-      ]
-    ),
-
     .plugin(
       name: "Formatter",
       capability: .command(
@@ -42,14 +25,6 @@ let package = Package(
       capability: .buildTool,
       dependencies: ["SwiftLintBinary", "SwiftFormatBinary"]
     ),
-
-    .plugin(
-      name: "Shielder",
-      capability: .buildTool,
-      dependencies: ["ShielderApp"]
-    ),
-    .executableTarget(name: "ShielderApp"),
-    .testTarget(name: "ShielderAppTests", dependencies: ["ShielderApp"]),
 
     .binaryTarget(
       name: "SwiftLintBinary",

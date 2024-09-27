@@ -4,4 +4,5 @@
 //  Copyright © 2024 Denis Gaskov. All rights reserved.
 //
 
-import ProjectDescription
+/// The entry point of `ShoppyNetwork` module
+public enum ShoppyNetwork {}

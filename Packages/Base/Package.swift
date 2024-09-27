@@ -10,31 +10,22 @@ let package = Package(
   platforms: [.iOS(.v17), .macOS(.v14)],
   products: [
     .library(name: "MinimalFoundation", targets: ["MinimalFoundation"]),
-    .library(name: "MinimalUI", targets: ["MinimalUI"]),
-    .library(name: "MinimalSharedServices", targets: ["MinimalSharedServices"])
+    .library(name: "MinimalUI", targets: ["MinimalUI"])
   ],
   dependencies: [
-    .package(path: "../Tools"),
-    // TODO: [10/20/2024] - check if there's a stable release of Factory after Release of Xcode 16
-    .package(url: "https://github.com/hmlongco/Factory", branch: "swift6"),
-    .package(url: "https://github.com/apple/swift-numerics.git", from: "1.0.2")
+    .package(url: "https://github.com/hmlongco/Factory", from: "2.4.1")
   ],
   targets: [
     .target(
       name: "MinimalFoundation",
-      dependencies: [.product(name: "Factory", package: "Factory")],
-      plugins: [.plugin(name: "Shielder", package: "Tools")]
+      dependencies: [.product(name: "Factory", package: "Factory")]
     ),
-    .testTarget(name: "MinimalFoundationTests", dependencies: [
-      .foundation,
-      .product(name: "Numerics", package: "swift-numerics")
-    ]),
+    .testTarget(
+      name: "MinimalFoundationTests",
+      dependencies: [.foundation]
+    ),
 
-    .target(name: "MinimalUI", dependencies: [.foundation]),
-    .testTarget(name: "MinimalUITests", dependencies: [.ui]),
-
-    .target(name: "MinimalSharedServices", dependencies: [.foundation, .ui]),
-    .testTarget(name: "MinimalSharedServicesTests", dependencies: [.sharedServices])
+    .target(name: "MinimalUI", dependencies: [.foundation])
   ]
 )
 
@@ -43,6 +34,4 @@ let package = Package(
 extension Target.Dependency {
   static var foundation: Self { "MinimalFoundation" }
   static var ui: Self { "MinimalUI" }
-  static var sharedServices: Self { "MinimalSharedServices" }
-  static var macros: Self { .product(name: "Macros", package: "Tools") }
 }

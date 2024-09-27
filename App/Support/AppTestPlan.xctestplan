@@ -14,9 +14,9 @@
   "testTargets" : [
     {
       "target" : {
-        "containerPath" : "container:Packages\/Features",
-        "identifier" : "LaunchTests",
-        "name" : "LaunchTests"
+        "containerPath" : "container:Packages\/ShoppyNetwork",
+        "identifier" : "ShoppyNetworkTests",
+        "name" : "ShoppyNetworkTests"
       }
     },
     {
@@ -24,20 +24,6 @@
         "containerPath" : "container:Packages\/Tools",
         "identifier" : "ShielderAppTests",
         "name" : "ShielderAppTests"
-      }
-    },
-    {
-      "target" : {
-        "containerPath" : "container:Packages\/Base",
-        "identifier" : "MinimalUITests",
-        "name" : "MinimalUITests"
-      }
-    },
-    {
-      "target" : {
-        "containerPath" : "container:Packages\/Base",
-        "identifier" : "MinimalSharedServicesTests",
-        "name" : "MinimalSharedServicesTests"
       }
     },
     {

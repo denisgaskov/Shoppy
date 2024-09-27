@@ -7,7 +7,6 @@
 --enable blankLinesBetweenImports
 --enable blockComments
 --enable docComments
---enable markTypes
 --enable redundantProperty
 --enable sortSwitchCases # could be removed if there're too many false positives; companion for sorted_enum_cases
 --enable wrapEnumCases

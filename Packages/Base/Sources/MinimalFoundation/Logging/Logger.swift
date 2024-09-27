@@ -9,11 +9,9 @@ import OSLog
 // MARK: - LogCategory
 
 public enum LogCategory: String, Sendable, CaseIterable {
-  case authentication
-  case bootstrap
-  case keychain
-  case sharedServices
   case network
+  case paginatedList
+  case productList
 }
 
 // MARK: - Container + Logger
@@ -23,24 +21,17 @@ public enum LogCategory: String, Sendable, CaseIterable {
 /// There's no significant performance drawback expected, as this struct does not contain any data.
 extension Container {
   public struct Logger: Sendable {
-    public var authentication: Factory<os.Logger> {
-      Container { os.Logger(category: .authentication) }
-    }
-
-    public var bootstrap: Factory<os.Logger> {
-      Container { os.Logger(category: .bootstrap) }
-    }
-
-    public var keychain: Factory<os.Logger> {
-      Container { os.Logger(category: .keychain) }
-    }
-
-    public var sharedServices: Factory<os.Logger> {
-      Container { os.Logger(category: .sharedServices) }
-    }
 
     public var network: Factory<os.Logger> {
       Container { os.Logger(category: .network) }
+    }
+
+    public var productList: Factory<os.Logger> {
+      Container { os.Logger(category: .productList) }
+    }
+
+    public var paginatedList: Factory<os.Logger> {
+      Container { os.Logger(category: .paginatedList) }
     }
   }
 

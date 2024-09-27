@@ -19,7 +19,7 @@ let project = Project(
   packages: [
     "Base",
     "Features",
-    "SampleClient",
+    "ShoppyNetwork",
     "Tools"
   ].map { .local(path: "Packages/\($0)") },
   settings: .settings(configurations: AppEnvironment.allConfigurations),
@@ -38,7 +38,6 @@ let project = Project(
       sources: ["App/Sources/**"],
       resources: ["App/Resources/**"],
       entitlements: entitlements,
-      scripts: [Scripts.Target.shielder],
       dependencies: [
         .package(product: "Root", type: .runtime),
         .package(product: "Linter", type: .plugin)
