@@ -1,0 +1,33 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "Cancel" : {
+
+    },
+    "Error happened. Retry?" : {
+
+    },
+    "It looks like there’s nothing to display here right now. Try refreshing later for updates" : {
+
+    },
+    "Loading..." : {
+
+    },
+    "No data available" : {
+
+    },
+    "Oops! Something Went Wrong" : {
+
+    },
+    "Refresh" : {
+
+    },
+    "Refresh failed" : {
+
+    },
+    "We couldn’t load the content. Please check your internet connection or try again later" : {
+
+    }
+  },
+  "version" : "1.0"
+}

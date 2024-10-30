@@ -7,6 +7,7 @@ import PackageDescription
 
 let package = Package(
   name: "Base",
+  defaultLocalization: "en",
   platforms: [.iOS(.v17), .macOS(.v14)],
   products: [
     .library(name: "ShoppyFoundation", targets: ["ShoppyFoundation"]),
