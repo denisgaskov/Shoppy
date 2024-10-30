@@ -12,6 +12,7 @@ public struct AppScene: Scene {
     WindowGroup {
       NavigationStack {
         ProductListView()
+          .tint(.purple)
       }
     }
   }
