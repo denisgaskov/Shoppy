@@ -43,7 +43,9 @@ extension ShoppyNetwork {
         }
 
         let decoder = JSONDecoder()
-        return try decoder.decode(ResponseType.self, from: data)
+        let decoded = try decoder.decode(ResponseType.self, from: data)
+        logger.info("Request [\(request.path)] completed.")
+        return decoded
       } catch {
         logger.error("Network error: [\(request.path)] - \(error)")
         throw ShoppyNetwork.Error.unknown
