@@ -17,7 +17,7 @@ No doubt that testability is quite important, especially in large apps.
 A simple & minimalistic approach is to use [Factory](https://github.com/hmlongco/Factory).
 It's a well-maintained, compile-time safe solution, which fits >90% needs for _small-to-medimum+_-size apps.
 Another alternatives considered:
-1. `EnvironmentObject` - not runtime safe; can be used only inside Views.
+1. `EnvironmentObject` - not runtime safe; can be used only with SwiftUI.
 2. `Lyft` [approach with closures](https://noahgilmore.com/blog/swift-dependency-injection/) - OK, but lacks built-in features.
 3. `Swinject` and others - not runtime safe.
 4. `Needle`
@@ -41,15 +41,11 @@ That being said, this project uses Swift Testing only.
 Since it's a demo app, I've chosen default formula `(CURRENT_RELEASE_IOS_VERSION) - 1`.
 So since now it's iOS 18 available, I'm using iOS 17 as minimum.
 
-Also, because this project uses platform-independent components (SwiftUI, CoreLocation, etc) by default,
-it's not so hard to support MacOS too.
-However, if there's a strict need to e.g. support iOS 15 (so we can't use NavigationStack), we remove support for MacOS
-in favour of UIKit-based navigation.
-
 `Swift` is always set to latest stable version (`6.0` at the moment)
 
-## MV / MVVM Architecture
-In this project I followed modern MVMVVM approach without explicit subscriptions and without Combine.
+## MVVM Architecture
+Disclaimer: in my opinion, it's another topic for a large debate, which can be discussed later.
+In this project I followed modern MV/MVVM approach without explicit subscriptions and without Combine.
 It's a well-known and popular approach, based on this [thread](https://forums.developer.apple.com/forums/thread/699003).
 
 ## Extended Documentation
