@@ -32,7 +32,7 @@ extension Product {
   extension Product {
     static let preview = Product(
       name: "Lorem ipsum",
-      image: URL(string: "https://www.nordichq.com/wp-content/uploads/2023/03/Lightspeed-ecommerce-logo-686x1024.png"),
+      image: .preview,
       price: 9.99,
       currencyCode: "USD",
       itemsInStockCount: 14

@@ -5,11 +5,17 @@
 //
 
 import ShoppyUI
+import ShoppyFoundation
 import SwiftUI
 
 /// Product card, which desplays details of `Product` item.
 /// Supports light/dark ColorScheme, and responds to SizeCategory changes.
 struct ProductCard: View {
+  @State
+  private var thumbnail: UIImage?
+
+  private let imageLoader = Container.shared.imageLoader()
+
   let product: Product
 
   var body: some View {
@@ -39,24 +45,24 @@ struct ProductCard: View {
   }
 
   private var image: some View {
-    // Since caching is not required in this task, it's fine just to use AsyncImage.
-    // In real scenario, it's adviced to use either modern 3rd party library,
-    // or to write custom in-house implementation with caching, multithreading support, and parallel loading.
-    AsyncImage(url: product.image) { image in
-      image
-        .resizable()
-        .scaledToFit()
-    } placeholder: {
-      Image(systemName: "photo")
-        .resizable()
-        .scaledToFit()
-        .padding()
-        .symbolRenderingMode(.multicolor)
+    Group {
+      if let thumbnail {
+        Image(uiImage: thumbnail)
+          .resizable()
+          .scaledToFit()
+      } else {
+        Image(systemName: "photo")
+          .resizable()
+          .scaledToFit()
+          .padding()
+      }
     }
-    // In task definition it's said "64x64 pixels".
-    // However, I suppose it's meant "points" and not "pixels" - otherwise
-    // the image will be either super small, or super blurry.
     .frame(width: 64, height: 64)
+    .task {
+      if let imageURL = product.image {
+        thumbnail = try? await imageLoader.load(from: imageURL)
+      }
+    }
   }
 }
 

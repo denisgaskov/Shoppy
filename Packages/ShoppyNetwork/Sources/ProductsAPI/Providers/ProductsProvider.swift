@@ -4,6 +4,7 @@
 //  Copyright © 2024 Denis Gaskov. All rights reserved.
 //
 
+import Foundation
 import ShoppyFoundation
 import ShoppyNetwork
 
@@ -66,7 +67,7 @@ extension ProductsAPI {
           let id = skip + index
           return Response.Product(
             title: "Lorem \(id)",
-            thumbnail: "https://www.nordichq.com/wp-content/uploads/2023/03/Lightspeed-ecommerce-logo-686x1024.png",
+            thumbnail: URL.preview.absoluteString,
             price: 19.99,
             stock: 10
           )
