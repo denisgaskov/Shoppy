@@ -21,111 +21,78 @@ extension PaginatedListModelTests {
 
     @Test
     func loadWithSuccess() async throws {
-      sut.loadFirstPage()
-      let task = try #require(sut.currentTask)
-
+      let task = try #require(sut.loadFirstPage())
       #expect(sut.isLoading)
-      #expect(sut.didTryToLoadFirstPage == false)
-
-      await Task.yield()
-      provider.resume(page: ["foo", "bar"])
+      await provider.resume(page: ["foo", "bar"])
       _ = await task.result
 
-      #expect(sut.elements == ["foo", "bar"])
+      #expect(sut.content == .nonEmptyList(["foo", "bar"], hasNextPage: true))
       #expect(sut.hasLoadingError == false)
-      #expect(sut.showRefreshFailureAlert == false)
-      #expect(sut.didTryToLoadFirstPage == true)
-      #expect(sut.hasNextPage == true)
       #expect(sut.isLoading == false)
+      #expect(provider.loadInvocations == [.init(limit: 2, skip: 0)])
     }
 
     @Test
     func loadWithError() async throws {
-      sut.loadFirstPage()
-      let task = try #require(sut.currentTask)
-
-      await Task.yield()
-      provider.throwError()
+      let task = try #require(sut.loadFirstPage())
+      await provider.throwError()
       _ = await task.result
 
-      #expect(sut.elements.isEmpty)
+      #expect(sut.content == .contentUnavailable(isError: true))
       #expect(sut.hasLoadingError == true)
-      #expect(sut.showRefreshFailureAlert == false)
-      #expect(sut.didTryToLoadFirstPage == true)
-      #expect(sut.hasNextPage == false)
       #expect(sut.isLoading == false)
     }
 
     @Test
     func loadButEmpty() async throws {
-      sut.loadFirstPage()
-      let task = try #require(sut.currentTask)
-
-      await Task.yield()
-      provider.resume(page: [])
+      let task = try #require(sut.loadFirstPage())
+      await provider.resume(page: [])
       _ = await task.result
 
-      #expect(sut.elements.isEmpty)
+      #expect(sut.content == .contentUnavailable(isError: false))
       #expect(sut.hasLoadingError == false)
-      #expect(sut.showRefreshFailureAlert == false)
-      #expect(sut.didTryToLoadFirstPage == true)
-      #expect(sut.hasNextPage == false)
       #expect(sut.isLoading == false)
     }
 
     @Test
     func loadButLessThenExpected() async throws {
-      sut.loadFirstPage()
-      let task = try #require(sut.currentTask)
-
-      await Task.yield()
-      provider.resume(page: ["foo"])
+      let task = try #require(sut.loadFirstPage())
+      await provider.resume(page: ["foo"])
       _ = await task.result
 
-      #expect(sut.elements == ["foo"])
+      #expect(sut.content == .nonEmptyList(["foo"], hasNextPage: false))
       #expect(sut.hasLoadingError == false)
-      #expect(sut.showRefreshFailureAlert == false)
-      #expect(sut.didTryToLoadFirstPage == true)
-      #expect(sut.hasNextPage == false)
       #expect(sut.isLoading == false)
     }
 
     @Test
     func loadTwiceSimultaneously() async throws {
-      sut.loadFirstPage()
-      let task1 = try #require(sut.currentTask)
+      let task1 = sut.loadFirstPage()
+      let task2 = sut.loadFirstPage()
 
-      sut.loadFirstPage()
-      let task2 = try #require(sut.currentTask)
-      #expect(task1 == task2, "should not create new task")
+      #expect(task1 != nil)
+      #expect(task2 == nil, "should not create new task")
+
+      await Task.yield()
+      #expect(provider.loadInvocations == [.init(limit: 2, skip: 0)])
     }
 
     @Test
     func loadWithErrorAndRecover() async throws {
-      sut.loadFirstPage()
-      let task1 = try #require(sut.currentTask)
-
-      await Task.yield()
-      provider.throwError()
+      let task1 = try #require(sut.loadFirstPage())
+      await provider.throwError()
       _ = await task1.result
 
-      Task {
-        await sut.refresh()
-      }
-      try await Task.sleep(for: .milliseconds(10))
-
-      let task2 = try #require(sut.currentTask)
+      let task2 = try #require(sut.refresh())
       #expect(task1 != task2, "should create new task")
-
-      provider.resume(page: ["foo"])
+      await provider.resume(page: ["foo"])
       _ = await task2.result
 
-      #expect(sut.elements == ["foo"])
+      #expect(sut.content == .nonEmptyList(["foo"], hasNextPage: false))
       #expect(sut.hasLoadingError == false)
-      #expect(sut.showRefreshFailureAlert == false)
-      #expect(sut.didTryToLoadFirstPage == true)
-      #expect(sut.hasNextPage == false)
       #expect(sut.isLoading == false)
+
+      #expect(provider.loadInvocations == [.init(limit: 2, skip: 0), .init(limit: 2, skip: 0)])
     }
   }
 }

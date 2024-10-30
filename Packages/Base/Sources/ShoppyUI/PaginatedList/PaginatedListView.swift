@@ -14,130 +14,37 @@ extension PaginatedList {
   public struct View<Element: Sendable, Cell: SwiftUI.View>: SwiftUI.View {
     @StateObject
     private var model: Model<Element>
+    @State
+    private var hasRefreshError = false
     private let cellProvider: (Element) -> Cell
 
     public var body: some SwiftUI.View {
-      List {
-        ForEach(Array(model.elements.enumerated()), id: \.offset) { index, element in
-          cellProvider(element)
-            .listRowSeparator(.hidden)
-            .onAppear {
-              if index == model.elements.count - 1 {
-                model.loadNextPage()
-              }
-            }
+      Group {
+        switch model.content {
+          case .initialLoading:
+            ProgressView()
+          case .contentUnavailable(let isError):
+            contentUnavailableView(isError: isError)
+          case .nonEmptyList(let array, let hasNextPage):
+            elementsList(elements: array, hasNextPage: hasNextPage)
         }
-
-        loadingFooter
-      }
-      .listStyle(.plain)
-      .overlay {
-        // If it's loading of the first page, show ProgressView
-        if !model.didTryToLoadFirstPage, model.isLoading {
-          ProgressView()
-        }
-      }
-      .overlay {
-        contentUnavailableView
       }
       .refreshable {
-        await model.refresh()
+        _ = await model.refresh().result
+        hasRefreshError = model.hasLoadingError
       }
       .onAppear {
         model.loadFirstPage()
       }
-      .alert("Refresh failed", isPresented: $model.showRefreshFailureAlert) {
-        // Do not provide any custom actions.
-        // User can refresh again using same pull-to-refresh mechanism.
+      .alert("Refreshing failed", isPresented: $hasRefreshError) {
+        Button("OK", role: .cancel) {}
+      } message: {
+        Text("Use pull-to-refresh to try again later.")
       }
-    }
-
-    // MARK: LoadingFooter
-    
-    /// Loading footer, which is attached when first page is downloaded, and more pages are available.
-    ///
-    /// If next page is still loading, shows non-interactive "Loading" text.
-    /// If next page loading ended with an error, shows "Retry" button, which attempts to load next page again.
-    @ViewBuilder
-    private var loadingFooter: some SwiftUI.View {
-      if model.hasNextPage {
-        // If more pages are available, add a footer which is either 'Loading' or recoverable 'Error' state.
-        Group {
-          if model.isLoading {
-            Text("Loading...")
-          } else if model.hasLoadingError {
-            Button("Error happened. Retry?") {
-              model.loadNextPage()
-            }
-            .buttonStyle(.borderedProminent)
-          }
-        }
-        .frame(maxWidth: .infinity, alignment: .center)
-        .listRowSeparator(.hidden)
-      }
-    }
-
-    // MARK: ContentUnavailable
-    
-    /// A custom ContentUnavailableView
-    ///
-    /// This View is shown if:
-    /// 1. First page is empty: e. g. no products on the server.
-    /// 2. Loading of first page ended with an error.
-    @ViewBuilder
-    private var contentUnavailableView: some SwiftUI.View {
-      // If first page was loaded (with either empty content or error),
-      // show ContentUnavailableView with 'Refresh' button.
-      if model.didTryToLoadFirstPage, model.elements.isEmpty {
-        ContentUnavailableView {
-          if model.hasLoadingError {
-            Text("Oops! Something Went Wrong")
-          } else {
-            Text("No data available")
-          }
-        } description: {
-          if model.hasLoadingError {
-            Text("We couldn’t load the content. Please check your internet connection or try again later")
-          } else {
-            Text("It looks like there’s nothing to display here right now. Try refreshing later for updates")
-          }
-        } actions: {
-          HStack {
-            refreshButton
-
-            // Just for demo purposes (as requested in task).
-            // In real app, it's adviced not to use this UX.
-            if model.isLoading {
-              Button("Cancel") {
-                model.cancelCurrentTask()
-              }
-            }
-          }
-        }
-      }
-    }
-    
-    /// A `Refresh` button for ContentUnavailableView.
-    /// Becomes disabled during loading.
-    private var refreshButton: some SwiftUI.View {
-      Button {
-        Task {
-          await model.refresh()
-        }
-      } label: {
-        HStack {
-          Image(systemName: "arrow.clockwise.circle")
-          Text("Refresh")
-          if model.isLoading {
-            ProgressView()
-          }
-        }
-      }
-      .disabled(model.isLoading)
     }
 
     // MARK: Init
-    
+
     /// Initializes a `PaginatedList.View`
     /// - Parameters:
     ///   - dataProvider: Closure, which takes 2 parameters: `limit` and `skip`, and returns an array of `Element` objects.
@@ -155,6 +62,104 @@ extension PaginatedList {
       ))
       self.cellProvider = cellProvider
     }
+  }
+}
+
+// MARK: - ContentUnavailable
+
+extension PaginatedList.View {
+  /// A custom ContentUnavailableView.
+  ///
+  /// This View is shown when:
+  /// 1. First page is empty: e. g. no products on the server.
+  /// 2. Loading of first page ended with an error.
+  @ViewBuilder
+  private func contentUnavailableView(isError: Bool) -> some SwiftUI.View {
+    ContentUnavailableView {
+      if isError {
+        Text("Oops! Something Went Wrong")
+      } else {
+        Text("No data available")
+      }
+    } description: {
+      if isError {
+        Text("We couldn’t load the content. Please check your internet connection or try again later")
+      } else {
+        Text("It looks like there’s nothing to display here right now. Try refreshing later for updates")
+      }
+    } actions: {
+      contentUnavailableActions
+    }
+  }
+
+  /// Set of two buttons: "Refresh" and "Cancel", arranged vertically.
+  ///
+  /// Rules:
+  /// - `Refresh` button becomes disabled when loading.
+  /// - `ProgressView` is added near "Refresh" button when loading.
+  /// - `Cancel` button is hidden when is not loading.
+  private var contentUnavailableActions: some SwiftUI.View {
+    VStack {
+      HStack {
+        Button("Refresh", systemImage: "arrow.clockwise.circle") {
+          model.refresh()
+        }
+        .disabled(model.isLoading)
+
+        ProgressView()
+          .opacity(model.isLoading ? 1 : 0)
+      }
+
+      Button("Cancel") {
+        model.cancelCurrentTask()
+      }
+      .opacity(model.isLoading ? 1 : 0)
+    }
+  }
+}
+
+// MARK: - ElementsList
+
+extension PaginatedList.View {
+  @ViewBuilder
+  private func elementsList(elements: [Element], hasNextPage: Bool) -> some SwiftUI.View {
+    List {
+      ForEach(Array(elements.enumerated()), id: \.offset) { index, element in
+        cellProvider(element)
+          .listRowSeparator(.hidden)
+          .onAppear {
+            if index == elements.count - 1 {
+              model.loadNextPage()
+            }
+          }
+      }
+
+      if hasNextPage {
+        loadingFooter
+      }
+    }
+    .listStyle(.plain)
+  }
+
+  /// Loading footer, which is attached when first page is downloaded, and more pages are available.
+  ///
+  /// If next page is still loading, shows non-interactive "Loading" text.
+  /// If next page loading ended with an error, shows "Retry" button, which attempts to load next page again.
+  @ViewBuilder
+  private var loadingFooter: some SwiftUI.View {
+    // If more pages are available, add a footer which is either 'Loading' or recoverable 'Error' state.
+    Group {
+      if model.isLoading {
+        Text("Loading...")
+      } else if model.hasLoadingError {
+        Button("Error happened. Retry?") {
+          model.loadNextPage()
+        }
+        .buttonStyle(.borderedProminent)
+      }
+    }
+    .frame(maxWidth: .infinity, alignment: .center)
+    .listRowSeparator(.hidden)
   }
 }
 
@@ -176,6 +181,12 @@ extension PaginatedList {
     },
     cellProvider: { title in
       Text(title)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding()
+        .background {
+          RoundedRectangle(cornerRadius: 8)
+            .fill(Color.cardBackground)
+        }
     },
     fetchConfiguration: .init(pageSize: 30)
   )

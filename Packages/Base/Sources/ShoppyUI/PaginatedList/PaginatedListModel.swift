@@ -11,7 +11,7 @@ import ShoppyFoundation
 
 extension PaginatedList.Model {
   /// Represents the different triggers for loading data in a paginated list.
-  enum ListLoadingTrigger: String {
+  fileprivate enum ListLoadingTrigger: String {
     /// Trigger for loading the first page of data.
     case firstPage
     /// Trigger for loading a new page of data, typically used for pagination when additional data is needed.
@@ -41,28 +41,15 @@ extension PaginatedList {
     private let pageSize: Int
     private var page = 0
 
+    // @Published is needed for `isLoading` computed property
     @Published
-    private(set) var currentTask: Task<Void, Never>?
+    private var currentTask: Task<Void, Error>?
 
     @Published
-    private(set) var elements: [Element] = []
+    private(set) var content: ContentState<Element> = .initialLoading
 
     @Published
     private(set) var hasLoadingError = false
-
-    @Published
-    var showRefreshFailureAlert = false
-
-    /// `True` if loading of the first page has completed, regardless of success or failure; `False` otherwise.
-    ///
-    /// The `loadFirstPage` method can be called multiple times - on `onAppear`.
-    /// For example, when the user returns from a child screen, we may want to avoid refreshing the screen,
-    /// so we store and check this state.
-    @Published
-    private(set) var didTryToLoadFirstPage = false
-
-    @Published
-    private(set) var hasNextPage = false
 
     var isLoading: Bool {
       currentTask != nil
@@ -75,28 +62,27 @@ extension PaginatedList {
 
     // MARK: - Actions
 
-    func loadFirstPage() {
-      guard !didTryToLoadFirstPage, !isLoading else { return }
-      addTask(trigger: .firstPage)
+    @discardableResult
+    func loadFirstPage() -> Task<Void, Error>? {
+      guard !content.didCompleteInitialLoading, !isLoading else { return nil }
+      return addTask(trigger: .firstPage)
     }
 
-    func loadNextPage() {
+    @discardableResult
+    func loadNextPage() -> Task<Void, Error>? {
       // If next page is still loading, do not interrupt it.
-      guard hasNextPage, !isLoading else { return }
-      addTask(trigger: .newPage)
+      guard content.hasNextPage, !isLoading else { return nil }
+      return addTask(trigger: .newPage)
     }
 
-    func refresh() async {
+    @discardableResult
+    func refresh() -> Task<Void, Error> {
       // Can be called on:
       // 1. Pull-to-refresh
-      // 2. 'Refresh' button from full screen error state
-      // In both cases it's ok just to interrupt any previous task, and start refreshing again.
+      // 2. 'Refresh' button tap from "ContentUnavailable" state
+      // In both cases it's ok just to cancel any previous task (e. g. pagination), and start refreshing immediately.
       currentTask?.cancel()
-      // Wait until previous `currentTask` is cancelled and is set to nil.
-      await Task.yield()
-      addTask(trigger: .refresh)
-      // We use `async` signature and `await` for result, so SwiftUI's `refreshable` modifier can show running task.
-      _ = await currentTask?.result
+      return addTask(trigger: .refresh)
     }
 
     func cancelCurrentTask() {
@@ -109,48 +95,56 @@ extension PaginatedList {
 // MARK: - Private helpers
 
 extension PaginatedList.Model {
-  private func addTask(trigger: ListLoadingTrigger) {
+  private func addTask(trigger: ListLoadingTrigger) -> Task<Void, Error> {
     logger.debug("Triggered loading: \(trigger.rawValue)")
-    currentTask = Task {
+
+    let newTask = Task<Void, Error> {
       do {
         let isRefresh = trigger == .refresh
-        let newElements = try await dataProvider(pageSize, isRefresh ? 0 : elements.count)
+        var oldElements = content.elements
+        let newElements = try await dataProvider(pageSize, isRefresh ? 0 : oldElements.count)
         logger.debug("Loaded \(newElements.count) elements.")
 
         // If loading was successful, and if it was triggered by 'refresh', reset screen state.
         if isRefresh {
           page = 0
-          elements.removeAll()
+          oldElements.removeAll()
         }
 
-        elements.append(contentsOf: newElements)
+        oldElements.append(contentsOf: newElements)
 
-        // Use '>=' instead of '=', if API occasionally returns more then 'pageSize' items.
-        if newElements.count >= pageSize {
+        content =
+          if trigger == .firstPage, oldElements.isEmpty {
+            .contentUnavailable(isError: false)
+          } else {
+            .nonEmptyList(oldElements, hasNextPage: newElements.count >= pageSize)
+          }
+
+        if content.hasNextPage {
           page += 1
-          hasNextPage = true
         } else {
-          logger.info("Loaded all data. Total: \(self.elements.count), last page: \(newElements.count).")
-          hasNextPage = false
+          logger.info("Loaded all data. Total: \(oldElements.count), last page: \(newElements.count).")
         }
+
         hasLoadingError = false
       } catch {
         logger.error("Loading failed: \(error)")
 
-        // Ignore CancellationErrors and don't show them in UI.
-        if !(error is CancellationError) {
+        if trigger == .firstPage {
+          content = .contentUnavailable(isError: true)
+        }
+
+        if error is CancellationError {
+          // Ignore CancellationErrors - don't show them in UI.
+          throw error
+        } else {
           hasLoadingError = true
-          if trigger == .refresh {
-            showRefreshFailureAlert = true
-          }
         }
       }
-
-      if trigger == .firstPage {
-        didTryToLoadFirstPage = true
-      }
-
-      currentTask = nil
+      self.currentTask = nil
     }
+
+    self.currentTask = newTask
+    return newTask
   }
 }

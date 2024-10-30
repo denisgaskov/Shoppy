@@ -32,3 +32,44 @@ extension PaginatedList {
     public static let `default` = Self(pageSize: 20)
   }
 }
+
+// MARK: - ContentState
+
+extension PaginatedList {
+  enum ContentState<Element> {
+    case initialLoading
+    case contentUnavailable(isError: Bool)
+    case nonEmptyList([Element], hasNextPage: Bool)
+
+    var elements: [Element] {
+      if case .nonEmptyList(let array, _) = self {
+        return array
+      }
+
+      return []
+    }
+
+    var hasNextPage: Bool {
+      if case .nonEmptyList(_, let hasNextPage) = self {
+        return hasNextPage
+      }
+
+      return false
+    }
+
+    /// `True` if loading of the first page has completed, regardless of success or failure; `False` otherwise.
+    ///
+    /// The `loadFirstPage` method can be called multiple times - on `onAppear`.
+    /// For example, when the user returns from a child screen, we may want to avoid refreshing the screen,
+    /// so we store and check this state.
+    var didCompleteInitialLoading: Bool {
+      if case .initialLoading = self {
+        return false
+      }
+
+      return true
+    }
+  }
+}
+
+extension PaginatedList.ContentState: Equatable where Element: Equatable {}

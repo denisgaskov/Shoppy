@@ -21,11 +21,8 @@ extension PaginatedListModelTests {
 
     @Test
     func initialState() {
-      #expect(sut.elements.isEmpty)
+      #expect(sut.content == .initialLoading)
       #expect(sut.hasLoadingError == false)
-      #expect(sut.showRefreshFailureAlert == false)
-      #expect(sut.didTryToLoadFirstPage == false)
-      #expect(sut.hasNextPage == false)
       #expect(sut.isLoading == false)
     }
   }

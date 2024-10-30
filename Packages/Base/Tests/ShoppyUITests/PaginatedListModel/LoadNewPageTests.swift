@@ -18,78 +18,77 @@ extension PaginatedListModelTests {
       sut = provider.makeModel()
       self.provider = provider
 
-      sut.loadFirstPage()
-      let task = try #require(sut.currentTask)
-      await Task.yield()
-      provider.resume(page: ["foo1", "bar1"])
+      let task = try #require(sut.loadFirstPage())
+      await provider.resume(page: ["foo1", "bar1"])
       _ = await task.result
     }
 
     @Test
     func loadNextWithSuccess() async throws {
-      sut.loadNextPage()
+      let task = try #require(sut.loadNextPage())
 
-      #expect(sut.isLoading)
+      #expect(sut.content == .nonEmptyList(["foo1", "bar1"], hasNextPage: true))
+      #expect(sut.hasLoadingError == false)
+      #expect(sut.isLoading == true)
 
-      let task = try #require(sut.currentTask)
-      await Task.yield()
-      provider.resume(page: ["foo2", "bar2"])
+      await provider.resume(page: ["foo2", "bar2"])
       _ = await task.result
 
-      #expect(sut.elements == ["foo1", "bar1", "foo2", "bar2"])
+      #expect(sut.content == .nonEmptyList(["foo1", "bar1", "foo2", "bar2"], hasNextPage: true))
       #expect(sut.hasLoadingError == false)
-      #expect(sut.showRefreshFailureAlert == false)
-      #expect(sut.hasNextPage == true)
       #expect(sut.isLoading == false)
+
+      #expect(provider.loadInvocations == [.init(limit: 2, skip: 0), .init(limit: 2, skip: 2)])
     }
 
     @Test
     func loadNextButLessThenExpected() async throws {
-      sut.loadNextPage()
+      let task = try #require(sut.loadNextPage())
 
-      #expect(sut.isLoading)
-
-      let task = try #require(sut.currentTask)
-      await Task.yield()
-      provider.resume(page: ["foo2"])
+      await provider.resume(page: ["foo2"])
       _ = await task.result
 
-      #expect(sut.elements == ["foo1", "bar1", "foo2"])
+      #expect(sut.content == .nonEmptyList(["foo1", "bar1", "foo2"], hasNextPage: false))
       #expect(sut.hasLoadingError == false)
-      #expect(sut.showRefreshFailureAlert == false)
-      #expect(sut.hasNextPage == false)
       #expect(sut.isLoading == false)
-
-      sut.loadNextPage()
-      #expect(sut.currentTask == nil, "should not create new task")
     }
 
     @Test
     func loadNextWithError() async throws {
-      sut.loadNextPage()
+      let task = try #require(sut.loadNextPage())
 
-      #expect(sut.isLoading)
-
-      let task = try #require(sut.currentTask)
-      await Task.yield()
-      provider.throwError()
+      await provider.throwError()
       _ = await task.result
 
-      #expect(sut.elements == ["foo1", "bar1"])
+      #expect(sut.content == .nonEmptyList(["foo1", "bar1"], hasNextPage: true))
       #expect(sut.hasLoadingError == true)
-      #expect(sut.showRefreshFailureAlert == false)
-      #expect(sut.hasNextPage == true)
       #expect(sut.isLoading == false)
     }
 
     @Test
     func loadTwiceSimultaneously() async throws {
-      sut.loadNextPage()
-      let task1 = try #require(sut.currentTask)
+      let task1 = sut.loadNextPage()
+      let task2 = sut.loadNextPage()
 
-      sut.loadNextPage()
-      let task2 = try #require(sut.currentTask)
-      #expect(task1 == task2, "should not create new task")
+      #expect(task1 != nil)
+      #expect(task2 == nil, "should not create new task")
+
+      await Task.yield()
+      #expect(provider.loadInvocations == [.init(limit: 2, skip: 0), .init(limit: 2, skip: 2)])
+    }
+
+    @Test
+    func loadNextButLessThenExpectedAndLoadAgain() async throws {
+      let task1 = try #require(sut.loadNextPage())
+
+      await provider.resume(page: ["foo2"])
+      _ = await task1.result
+      #expect(sut.isLoading == false)
+
+      let task2 = sut.loadNextPage()
+      #expect(task2 == nil, "should not create new task")
+      #expect(sut.isLoading == false)
+      #expect(provider.loadInvocations == [.init(limit: 2, skip: 0), .init(limit: 2, skip: 2)])
     }
   }
 }
