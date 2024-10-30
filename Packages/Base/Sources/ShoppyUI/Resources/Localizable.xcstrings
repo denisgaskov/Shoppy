@@ -16,13 +16,19 @@
     "No data available" : {
 
     },
+    "OK" : {
+
+    },
     "Oops! Something Went Wrong" : {
 
     },
     "Refresh" : {
 
     },
-    "Refresh failed" : {
+    "Refreshing failed" : {
+
+    },
+    "Use pull-to-refresh to try again later." : {
 
     },
     "We couldn’t load the content. Please check your internet connection or try again later" : {

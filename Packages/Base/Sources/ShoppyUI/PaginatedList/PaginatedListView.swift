@@ -36,9 +36,10 @@ extension PaginatedList {
       .onAppear {
         model.loadFirstPage()
       }
-      .alert("Refresh failed", isPresented: $hasRefreshError) {
-        // Do not provide any custom actions.
-        // User can refresh again using same pull-to-refresh mechanism.
+      .alert("Refreshing failed", isPresented: $hasRefreshError) {
+        Button("OK", role: .cancel) {}
+      } message: {
+        Text("Use pull-to-refresh to try again later.")
       }
     }
 
@@ -87,35 +88,33 @@ extension PaginatedList.View {
         Text("It looks like there’s nothing to display here right now. Try refreshing later for updates")
       }
     } actions: {
-      HStack {
-        refreshButton
-
-        // Just for demo purposes (as requested in task).
-        // In real app, it's adviced not to use this UX.
-        if model.isLoading {
-          Button("Cancel") {
-            model.cancelCurrentTask()
-          }
-        }
-      }
+      contentUnavailableActions
     }
   }
 
-  /// A `Refresh` button for ContentUnavailableView.
-  /// Becomes disabled during loading.
-  private var refreshButton: some SwiftUI.View {
-    Button {
-      model.refresh()
-    } label: {
+  /// Set of two buttons: "Refresh" and "Cancel", arranged vertically.
+  ///
+  /// Rules:
+  /// - `Refresh` button becomes disabled when loading.
+  /// - `ProgressView` is added near "Refresh" button when loading.
+  /// - `Cancel` button is hidden when is not loading.
+  private var contentUnavailableActions: some SwiftUI.View {
+    VStack {
       HStack {
-        Image(systemName: "arrow.clockwise.circle")
-        Text("Refresh")
-        if model.isLoading {
-          ProgressView()
+        Button("Refresh", systemImage: "arrow.clockwise.circle") {
+          model.refresh()
         }
+        .disabled(model.isLoading)
+
+        ProgressView()
+          .opacity(model.isLoading ? 1 : 0)
       }
+
+      Button("Cancel") {
+        model.cancelCurrentTask()
+      }
+      .opacity(model.isLoading ? 1 : 0)
     }
-    .disabled(model.isLoading)
   }
 }
 
@@ -182,6 +181,12 @@ extension PaginatedList.View {
     },
     cellProvider: { title in
       Text(title)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding()
+        .background {
+          RoundedRectangle(cornerRadius: 8)
+            .fill(Color.cardBackground)
+        }
     },
     fetchConfiguration: .init(pageSize: 30)
   )
