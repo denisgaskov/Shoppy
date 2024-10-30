@@ -1,6 +1,12 @@
 # Shoppy
-
 <img src="App/Resources/Assets.xcassets/AppIcon.appiconset/AppIcon_iOS_Any.png" style="height: 100px"/>
+
+## Screenshots
+<p align="middle">
+  <img src="DemoScreenshots/content-unavailable.png" width="32%" />
+  <img src="DemoScreenshots/nextpage-error.png" width="32%" />
+  <img src="DemoScreenshots/dark-theme.png" width="32%" />
+</p>
 
 ## Overview
 This is a repository for **Shoppy** iOS project.
