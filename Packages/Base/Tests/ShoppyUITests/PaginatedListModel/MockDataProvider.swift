@@ -21,12 +21,14 @@ final class MockDataProvider {
     }
   }
 
-  func resume(page: [String]) {
+  func resume(page: [String]) async {
+    await Task.yield()
     continuation.resume(returning: page)
     continuation = nil
   }
 
-  func throwError() {
+  func throwError() async {
+    await Task.yield()
     continuation.resume(throwing: MockError.mock)
     continuation = nil
   }

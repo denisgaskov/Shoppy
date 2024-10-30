@@ -23,16 +23,14 @@ extension PaginatedList {
         switch model.content {
           case .initialLoading:
             ProgressView()
-          case .firstPageError:
-            contentUnavailableView(isError: true)
-          case .firstPageEmpty:
-            contentUnavailableView(isError: false)
+          case .contentUnavailable(let isError):
+            contentUnavailableView(isError: isError)
           case .nonEmptyList(let array, let hasNextPage):
             elementsList(elements: array, hasNextPage: hasNextPage)
         }
       }
       .refreshable {
-        await model.refresh()
+        _ = await model.refresh().result
         hasRefreshError = model.hasLoadingError
       }
       .onAppear {
@@ -107,9 +105,7 @@ extension PaginatedList.View {
   /// Becomes disabled during loading.
   private var refreshButton: some SwiftUI.View {
     Button {
-      Task {
-        await model.refresh()
-      }
+      model.refresh()
     } label: {
       HStack {
         Image(systemName: "arrow.clockwise.circle")

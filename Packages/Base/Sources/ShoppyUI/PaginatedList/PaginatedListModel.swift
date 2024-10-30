@@ -41,8 +41,9 @@ extension PaginatedList {
     private let pageSize: Int
     private var page = 0
 
+    // @Published is needed for `isLoading` computed property
     @Published
-    private(set) var currentTask: Task<Void, Error>?
+    private var currentTask: Task<Void, Error>?
 
     @Published
     private(set) var content: ContentState<Element> = .initialLoading
@@ -61,31 +62,33 @@ extension PaginatedList {
 
     // MARK: - Actions
 
-    func loadFirstPage() {
-      guard !content.didCompleteInitialLoading, !isLoading else { return }
-      addTask(trigger: .firstPage)
+    @discardableResult
+    func loadFirstPage() -> Task<Void, Error>? {
+      guard !content.didCompleteInitialLoading, !isLoading else { return nil }
+      return addTask(trigger: .firstPage)
     }
 
-    func loadNextPage() {
+    @discardableResult
+    func loadNextPage() -> Task<Void, Error>? {
       // If next page is still loading, do not interrupt it.
-      guard content.hasNextPage, !isLoading else { return }
-      addTask(trigger: .newPage)
+      guard content.hasNextPage, !isLoading else { return nil }
+      return addTask(trigger: .newPage)
     }
 
-    func refresh() async {
+    @discardableResult
+    func refresh() -> Task<Void, Error> {
       // Can be called on:
       // 1. Pull-to-refresh
-      // 2. 'Refresh' button from full screen error state
+      // 2. 'Refresh' button tap from "ContentUnavailable" state
       // In both cases it's ok just to interrupt any previous task, and start refreshing again.
       currentTask?.cancel()
 
-      // Wait until previous `currentTask` is cancelled and is set to nil (which is important for `isLoading`).
-      await Task.yield()
-      addTask(trigger: .refresh)
+      return Task {
+        // Wait until previous `currentTask` is cancelled and is set to nil (which is important for `isLoading`).
+        await Task.yield()
 
-      // We use `async` signature and `await` for result,
-      // so SwiftUI's `refreshable` modifier can show progress correctly.
-      _ = await currentTask?.result
+        _ = await addTask(trigger: .refresh).result
+      }
     }
 
     func cancelCurrentTask() {
@@ -98,9 +101,10 @@ extension PaginatedList {
 // MARK: - Private helpers
 
 extension PaginatedList.Model {
-  private func addTask(trigger: ListLoadingTrigger) {
+  private func addTask(trigger: ListLoadingTrigger) -> Task<Void, Error> {
     logger.debug("Triggered loading: \(trigger.rawValue)")
-    currentTask = Task {
+
+    let newTask = Task<Void, Error> {
       do {
         let isRefresh = trigger == .refresh
         var oldElements = content.elements
@@ -117,7 +121,7 @@ extension PaginatedList.Model {
 
         content =
           if trigger == .firstPage, oldElements.isEmpty {
-            .firstPageEmpty
+            .contentUnavailable(isError: false)
           } else {
             .nonEmptyList(oldElements, hasNextPage: newElements.count >= pageSize)
           }
@@ -133,16 +137,20 @@ extension PaginatedList.Model {
         logger.error("Loading failed: \(error)")
 
         if trigger == .firstPage {
-          content = .firstPageError
+          content = .contentUnavailable(isError: true)
         }
 
-        // Ignore CancellationErrors - don't show them in UI.
-        if !(error is CancellationError) {
+        if error is CancellationError {
+          // Ignore CancellationErrors - don't show them in UI.
+          throw error
+        } else {
           hasLoadingError = true
         }
       }
-
-      currentTask = nil
+      self.currentTask = nil
     }
+
+    self.currentTask = newTask
+    return newTask
   }
 }

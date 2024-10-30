@@ -31,11 +31,14 @@ extension PaginatedList {
 
     public static let `default` = Self(pageSize: 20)
   }
+}
 
+// MARK: - ContentState
+
+extension PaginatedList {
   enum ContentState<Element> {
     case initialLoading
-    case firstPageError
-    case firstPageEmpty
+    case contentUnavailable(isError: Bool)
     case nonEmptyList([Element], hasNextPage: Bool)
 
     var elements: [Element] {
@@ -68,3 +71,5 @@ extension PaginatedList {
     }
   }
 }
+
+extension PaginatedList.ContentState: Equatable where Element: Equatable {}
