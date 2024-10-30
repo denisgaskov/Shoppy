@@ -25,6 +25,7 @@ public struct ProductListView: View {
       }
     )
     .navigationTitle("Products")
+    .navigationBarTitleDisplayMode(.inline)
   }
 
   public init() {}

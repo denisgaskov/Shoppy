@@ -33,14 +33,9 @@ public protocol ImageLoader: Sendable {
 /// Loads and downsamples given image
 ///
 /// ## Details
-/// In that particular case I suppose it's better to use `URLSession` + `UIGraphicsImageRenderer`,
-/// instead of `CGImageSourceCreateThumbnailAtIndex`, because it's non-interrupatble (which is quite important).
-/// Also, performance of `CGImageSourceCreateThumbnailAtIndex` is not always better then `UIGraphicsImageRenderer`
-/// as per https://nshipster.com/image-resizing
-///
-/// ## Disclaimer
-/// It's still not the best solution in my opinion. We have to load full image from the server,
-/// so it's adviced to use server-side image scaling / downsampling instead.
+/// In that particular case I think it's better to use `URLSession` + `UIGraphicsImageRenderer`,
+/// instead of `CGImageSourceCreateThumbnailAtIndex`, because latter is non-interrupatble (which is quite important).
+/// Also, performance of `UIGraphicsImageRenderer` is not that bad as per https://nshipster.com/image-resizing
 ///
 /// ## Points or Pixels
 /// In task definition it was said "64x64 **pixels**".
@@ -85,24 +80,26 @@ actor DefaultImageLoader: ImageLoader {
 
 import SwiftUI
 
-#Preview {
-  @Previewable
-  @State
-  var uiImage: UIImage?
+#if DEBUB
+  #Preview {
+    @Previewable
+    @State
+    var uiImage: UIImage?
 
-  @Previewable
-  var imageLoader = DefaultImageLoader()
+    @Previewable
+    var imageLoader = DefaultImageLoader()
 
-  if let uiImage {
-    Image(uiImage: uiImage)
-      .resizable()
-      .scaledToFit()
-      .frame(width: 128)
-      .border(.black)
-  } else {
-    Image(systemName: "circle")
-      .task {
-        uiImage = try? await imageLoader.load(from: .preview)
-      }
+    if let uiImage {
+      Image(uiImage: uiImage)
+        .resizable()
+        .scaledToFit()
+        .frame(width: 128)
+        .border(.black)
+    } else {
+      Image(systemName: "circle")
+        .task {
+          uiImage = try? await imageLoader.load(from: .preview)
+        }
+    }
   }
-}
+#endif

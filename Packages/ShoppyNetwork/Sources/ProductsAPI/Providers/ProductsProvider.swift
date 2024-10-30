@@ -12,9 +12,11 @@ extension Container {
   public var productsAPI: Factory<ProductsAPI.Provider> {
     self { ProductsAPI.DefaultProvider() }
       .cached
-      .onPreview {
-        ProductsAPI.PreviewProvider()
-      }
+      #if DEBUG
+        .onPreview {
+          ProductsAPI.PreviewProvider()
+        }
+      #endif
   }
 }
 
