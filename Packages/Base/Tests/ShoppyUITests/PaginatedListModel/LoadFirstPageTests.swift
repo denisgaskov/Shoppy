@@ -29,6 +29,7 @@ extension PaginatedListModelTests {
       #expect(sut.content == .nonEmptyList(["foo", "bar"], hasNextPage: true))
       #expect(sut.hasLoadingError == false)
       #expect(sut.isLoading == false)
+      #expect(provider.loadInvocations == [.init(limit: 2, skip: 0)])
     }
 
     @Test
@@ -71,6 +72,9 @@ extension PaginatedListModelTests {
 
       #expect(task1 != nil)
       #expect(task2 == nil, "should not create new task")
+
+      await Task.yield()
+      #expect(provider.loadInvocations == [.init(limit: 2, skip: 0)])
     }
 
     @Test
@@ -81,13 +85,14 @@ extension PaginatedListModelTests {
 
       let task2 = try #require(sut.refresh())
       #expect(task1 != task2, "should create new task")
-      try await Task.sleep(for: .milliseconds(10))
       await provider.resume(page: ["foo"])
       _ = await task2.result
 
       #expect(sut.content == .nonEmptyList(["foo"], hasNextPage: false))
       #expect(sut.hasLoadingError == false)
       #expect(sut.isLoading == false)
+
+      #expect(provider.loadInvocations == [.init(limit: 2, skip: 0), .init(limit: 2, skip: 0)])
     }
   }
 }

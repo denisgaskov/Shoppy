@@ -18,65 +18,52 @@ extension PaginatedListModelTests {
       sut = provider.makeModel()
       self.provider = provider
 
-      sut.loadFirstPage()
-      let task = try #require(sut.currentTask)
-      await Task.yield()
-      provider.resume(page: ["foo1", "bar1"])
+      let task = try #require(sut.loadFirstPage())
+      await provider.resume(page: ["foo1", "bar1"])
       _ = await task.result
     }
 
     @Test
     func refreshFirstPageWithSuccess() async throws {
-      try await refresh()
-
+      let task = try #require(sut.refresh())
       #expect(sut.isLoading)
-
-      let task = try #require(sut.currentTask)
-      await Task.yield()
-      provider.resume(page: ["foo2", "bar2"])
+      await provider.resume(page: ["foo2", "bar2"])
       _ = await task.result
 
-      #expect(sut.elements == ["foo2", "bar2"])
+      #expect(sut.content == .nonEmptyList(["foo2", "bar2"], hasNextPage: true))
       #expect(sut.hasLoadingError == false)
-      #expect(sut.showRefreshFailureAlert == false)
-      #expect(sut.hasNextPage == true)
       #expect(sut.isLoading == false)
+
+      #expect(provider.loadInvocations == [.init(limit: 2, skip: 0), .init(limit: 2, skip: 0)])
     }
 
     @Test
     func refreshFirstPageWithError() async throws {
-      try await refresh()
+      let task = try #require(sut.refresh())
 
-      #expect(sut.isLoading)
-
-      let task = try #require(sut.currentTask)
-      await Task.yield()
-      provider.throwError()
+      await provider.throwError()
       _ = await task.result
 
-      #expect(sut.elements == ["foo1", "bar1"])
+      #expect(sut.content == .nonEmptyList(["foo1", "bar1"], hasNextPage: true))
       #expect(sut.hasLoadingError == true)
-      #expect(sut.showRefreshFailureAlert == true)
-      #expect(sut.hasNextPage == true)
       #expect(sut.isLoading == false)
     }
 
     @Test
     func refreshTwiceSimultaneously() async throws {
-      try await refresh()
-      let task1 = try #require(sut.currentTask)
+      let task1 = sut.refresh()
+      let task2 = sut.refresh()
 
-      try await refresh()
-      let task2 = try #require(sut.currentTask)
+      #expect(task1 != nil)
+      #expect(task2 != nil, "should create new task")
+      #expect(task1 != task2)
 
-      #expect(task1 != task2, "should create new task")
-    }
-
-    private func refresh() async throws {
-      Task {
-        await sut.refresh()
-      }
-      try await Task.sleep(for: .milliseconds(10))
+      await Task.yield()
+      #expect(provider.loadInvocations == [
+        .init(limit: 2, skip: 0),
+        .init(limit: 2, skip: 0),
+        .init(limit: 2, skip: 0)
+      ])
     }
   }
 }

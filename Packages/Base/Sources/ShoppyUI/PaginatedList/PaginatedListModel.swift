@@ -80,15 +80,9 @@ extension PaginatedList {
       // Can be called on:
       // 1. Pull-to-refresh
       // 2. 'Refresh' button tap from "ContentUnavailable" state
-      // In both cases it's ok just to interrupt any previous task, and start refreshing again.
+      // In both cases it's ok just to cancel any previous task (e. g. pagination), and start refreshing immediately.
       currentTask?.cancel()
-
-      return Task {
-        // Wait until previous `currentTask` is cancelled and is set to nil (which is important for `isLoading`).
-        await Task.yield()
-
-        _ = await addTask(trigger: .refresh).result
-      }
+      return addTask(trigger: .refresh)
     }
 
     func cancelCurrentTask() {
