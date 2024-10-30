@@ -10,9 +10,13 @@ import ShoppyFoundation
 // MARK: - ListLoadingTrigger
 
 extension PaginatedList.Model {
+  /// Represents the different triggers for loading data in a paginated list.
   enum ListLoadingTrigger: String {
+    /// Trigger for loading the first page of data.
     case firstPage
+    /// Trigger for loading a new page of data, typically used for pagination when additional data is needed.
     case newPage
+    /// Trigger for refreshing the existing data, reloading the list from the beginning.
     case refresh
   }
 }
@@ -20,6 +24,16 @@ extension PaginatedList.Model {
 // MARK: - Model
 
 extension PaginatedList {
+  /// A `Model` subcomponent of `PaginatedList` feature.
+  ///
+  /// Contains and encapsulates business logic for:
+  /// 1. loading first page - `loadFirstPage()`
+  /// 2. loading next page (pagination) - `loadNextPage()`
+  /// 3. refreshing from the beginning (pull-to-refresh) - `refresh()`
+  /// 4. cancellation of current task - `cancelCurrentTask()`
+  ///
+  /// - Note: Additionally, has tests under `ShoppyUITests/PaginatedListModel`.
+  /// When changing/adding functionality of `PaginatedList.Model`, UnitTests should be adjusted as well.
   @MainActor
   final class Model<Element: Sendable>: ObservableObject {
     private let logger = Container.shared.logger.paginatedList()

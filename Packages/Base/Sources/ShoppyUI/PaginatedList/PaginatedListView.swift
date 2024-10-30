@@ -10,10 +10,10 @@ import SwiftUI
 // MARK: - View
 
 extension PaginatedList {
+  /// A `View` subcomponent of `PaginatedList` feature.
   public struct View<Element: Sendable, Cell: SwiftUI.View>: SwiftUI.View {
     @StateObject
     private var model: Model<Element>
-
     private let cellProvider: (Element) -> Cell
 
     public var body: some SwiftUI.View {
@@ -53,11 +53,15 @@ extension PaginatedList {
     }
 
     // MARK: LoadingFooter
-
+    
+    /// Loading footer, which is attached when first page is downloaded, and more pages are available.
+    ///
+    /// If next page is still loading, shows non-interactive "Loading" text.
+    /// If next page loading ended with an error, shows "Retry" button, which attempts to load next page again.
     @ViewBuilder
     private var loadingFooter: some SwiftUI.View {
       if model.hasNextPage {
-        // If more pages are available, add a footer which is either 'Loading' or 'Error' (recoverable) state.
+        // If more pages are available, add a footer which is either 'Loading' or recoverable 'Error' state.
         Group {
           if model.isLoading {
             Text("Loading...")
@@ -74,7 +78,12 @@ extension PaginatedList {
     }
 
     // MARK: ContentUnavailable
-
+    
+    /// A custom ContentUnavailableView
+    ///
+    /// This View is shown if:
+    /// 1. First page is empty: e. g. no products on the server.
+    /// 2. Loading of first page ended with an error.
     @ViewBuilder
     private var contentUnavailableView: some SwiftUI.View {
       // If first page was loaded (with either empty content or error),
@@ -107,7 +116,9 @@ extension PaginatedList {
         }
       }
     }
-
+    
+    /// A `Refresh` button for ContentUnavailableView.
+    /// Becomes disabled during loading.
     private var refreshButton: some SwiftUI.View {
       Button {
         Task {
@@ -126,7 +137,13 @@ extension PaginatedList {
     }
 
     // MARK: Init
-
+    
+    /// Initializes a `PaginatedList.View`
+    /// - Parameters:
+    ///   - dataProvider: Closure, which takes 2 parameters: `limit` and `skip`, and returns an array of `Element` objects.
+    ///   E. g., models for `cellProvider`.
+    ///   - cellProvider: Closure, which takes `Element` and returns `Cell` - a View.
+    ///   - fetchConfiguration: Additional configuration for fetching. Optional.
     public init(
       dataProvider: @escaping DataProvider<Element>,
       cellProvider: @escaping (Element) -> Cell,
