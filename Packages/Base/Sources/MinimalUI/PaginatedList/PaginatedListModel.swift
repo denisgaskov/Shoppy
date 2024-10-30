@@ -28,7 +28,7 @@ extension PaginatedList {
     private var page = 0
 
     @Published
-    private var currentTask: Task<Void, Never>?
+    private(set) var currentTask: Task<Void, Never>?
 
     @Published
     private(set) var elements: [Element] = []
@@ -43,7 +43,7 @@ extension PaginatedList {
     private(set) var didTryToLoadFirstPage = false
 
     @Published
-    private(set) var hasNextPage = true
+    private(set) var hasNextPage = false
 
     var isLoading: Bool {
       currentTask != nil
@@ -60,7 +60,7 @@ extension PaginatedList {
       // `loadFirstPage` can be invoked multiple times.
       // We don't want to refresh the screen when used comes back from child screen,
       // so store and check this state.
-      guard !didTryToLoadFirstPage else { return }
+      guard !didTryToLoadFirstPage, !isLoading else { return }
       addTask(trigger: .firstPage)
     }
 
@@ -73,13 +73,13 @@ extension PaginatedList {
     func refresh() async {
       // Can be called on:
       // 1. Pull-to-refresh
-      // 2. 'Refresh' button on full screen error state
+      // 2. 'Refresh' button from full screen error state
       // In both cases it's ok just to interrupt any previous task, and start refreshing again.
       currentTask?.cancel()
-      // Wait when `currentTask` is completely cancelled and is set to nil.
+      // Wait until previous `currentTask` is cancelled and is set to nil.
       await Task.yield()
       addTask(trigger: .refresh)
-      // We use `async` signature so SwiftUI's `refreshable` modifier can show running task.
+      // We use `async` signature and `await` for result, so SwiftUI's `refreshable` modifier can show running task.
       _ = await currentTask?.result
     }
   }
@@ -94,6 +94,7 @@ extension PaginatedList.Model {
       do {
         let isRefresh = trigger == .refresh
         let newElements = try await dataProvider(pageSize, isRefresh ? 0 : elements.count)
+        logger.debug("Loaded \(newElements.count) elements.")
 
         // If loading was successful, and if it was triggered by 'refresh', reset screen state.
         if isRefresh {
@@ -102,11 +103,11 @@ extension PaginatedList.Model {
         }
 
         elements.append(contentsOf: newElements)
-        logger.debug("Loaded \(newElements.count) elements.")
 
         // Use '>=' instead of '=', if API occasionally returns more then 'pageSize' items.
         if newElements.count >= pageSize {
           page += 1
+          hasNextPage = true
         } else {
           logger.info("Loaded all data. Total: \(self.elements.count), last page: \(newElements.count).")
           hasNextPage = false

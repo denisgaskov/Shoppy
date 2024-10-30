@@ -28,11 +28,11 @@ extension PaginatedList {
             }
         }
 
-        if !model.elements.isEmpty, model.hasNextPage {
+        if model.hasNextPage {
+          // If more pages are available, add a footer which is either 'Loading' or 'Error' (recoverable) state.
           Group {
             if model.isLoading {
               Text("Loading...")
-                .listRowSeparator(.hidden)
             } else if model.hasLoadingError {
               Button("Error happened. Retry?") {
                 model.loadNextPage()
@@ -46,11 +46,14 @@ extension PaginatedList {
       }
       .listStyle(.plain)
       .overlay {
+        // If it's loading of the first page, show ProgressView
         if !model.didTryToLoadFirstPage, model.isLoading {
           ProgressView()
         }
       }
       .overlay {
+        // If first page was loaded (with either empty content or error),
+        // show ContentUnavailableView with 'Refresh' button.
         if model.didTryToLoadFirstPage, model.elements.isEmpty {
           ContentUnavailableView {
             if model.hasLoadingError {
@@ -75,7 +78,10 @@ extension PaginatedList {
       .onAppear {
         model.loadFirstPage()
       }
-      .alert("Refresh failed", isPresented: $model.showRefreshFailureAlert) { /* No custom actions */ }
+      .alert("Refresh failed", isPresented: $model.showRefreshFailureAlert) {
+        // Do not provide any custom actions.
+        // User can refresh again using same pull-to-refresh mechanism.
+      }
     }
 
     private var refreshButton: some SwiftUI.View {

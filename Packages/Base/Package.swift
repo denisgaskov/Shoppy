@@ -14,7 +14,7 @@ let package = Package(
   ],
   dependencies: [
     // The only one external dependency used.
-    // Alternatives (including in-house variants) are listed in README.md
+    // Alternatives (including in-house variants) are listed in README.md.
     .package(url: "https://github.com/hmlongco/Factory", from: "2.4.1")
   ],
   targets: [
@@ -23,7 +23,8 @@ let package = Package(
       dependencies: [.product(name: "Factory", package: "Factory")]
     ),
 
-    .target(name: "MinimalUI", dependencies: [.foundation])
+    .target(name: "MinimalUI", dependencies: [.foundation]),
+    .testTarget(name: "MinimalUITests", dependencies: [.ui])
   ]
 )
 
