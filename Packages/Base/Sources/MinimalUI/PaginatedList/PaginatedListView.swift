@@ -4,26 +4,14 @@
 //  Copyright © 2024 Denis Gaskov. All rights reserved.
 //
 
-import SwiftUI
 import MinimalFoundation
+import SwiftUI
 
-enum ListLoadingTrigger {
+enum ListLoadingTrigger: String {
   case firstPage
   case newPage
   case refresh
 }
-
-enum ListLoadingError: Swift.Error {
-  /// No items found on the first page
-  case emptyFirstPage
-  /// Initial load of the list failed
-  case firstPageLoadingFailed
-  /// Loading a new (paginated) page failed
-  case newPageLoadingFailed
-  /// Refresh of the list failed
-  case refreshFailed
-}
-
 
 // MARK: - Model
 
@@ -45,7 +33,7 @@ extension PaginatedList {
     private(set) var hasLoadingError = false
 
     @Published
-    var showErrorAlert = false
+    var showRefreshFailureAlert = false
 
     @Published
     private(set) var didTryToLoadFirstPage = false
@@ -66,29 +54,33 @@ extension PaginatedList {
     }
 
     func loadFirstPage() {
+      // `loadFirstPage` can be invoked multiple times.
+      // E. g. we don't want to refresh the screen when used comes back from child screen,
+      // so store and check this state.
       guard !didTryToLoadFirstPage else {
         return
       }
 
-      addTask(trigger: .firstPage) { [weak self] in
-        self?.didTryToLoadFirstPage = true
-      }
+      addTask(trigger: .firstPage)
     }
 
     func loadNextPage() {
       guard !isLoading else { return }
-      addTask(trigger: .newPage, completion: nil)
+      addTask(trigger: .newPage)
     }
 
     func refresh() async {
       currentTask?.cancel()
-      addTask(trigger: .refresh, completion: nil)
+      // Wait when `currentTask` is completely cancelled and is set to nil
+      await Task.yield()
+      addTask(trigger: .refresh)
       _ = await currentTask?.result
     }
 
     // MARK: - Private
 
-    private func addTask(trigger: ListLoadingTrigger, completion: Callback?) {
+    private func addTask(trigger: ListLoadingTrigger) {
+      logger.debug("Triggered loading: \(trigger.rawValue)")
       currentTask = Task {
         do {
           let isRefresh = trigger == .refresh
@@ -108,12 +100,23 @@ extension PaginatedList {
             logger.info("Loaded all data. Total: \(self.elements.count), last page: \(newElements.count).")
             hasNextPage = false
           }
+          hasLoadingError = false
         } catch {
           logger.error("Loading failed: \(error)")
-          hasLoadingError = true
+
+          // Ignore CancellationErrors, and don't show them in UI.
+          if !(error is CancellationError) {
+            hasLoadingError = true
+            if trigger == .refresh {
+              showRefreshFailureAlert = true
+            }
+          }
         }
 
-        completion?()
+        if trigger == .firstPage {
+          didTryToLoadFirstPage = true
+        }
+
         currentTask = nil
       }
     }
@@ -123,17 +126,13 @@ extension PaginatedList {
 // MARK: - View
 
 extension PaginatedList {
-  struct View<Element: Sendable, Cell: SwiftUI.View>: SwiftUI.View {
+  public struct View<Element: Sendable, Cell: SwiftUI.View>: SwiftUI.View {
     @StateObject
     private var model: Model<Element>
 
-    @Environment(\.refresh)
-    private var refresh
-
     private let cellProvider: (Element) -> Cell
-    private let errorsConfiguration: ErrorsConfiguration
 
-    var body: some SwiftUI.View {
+    public var body: some SwiftUI.View {
       List {
         ForEach(Array(model.elements.enumerated()), id: \.offset) { index, element in
           cellProvider(element)
@@ -146,16 +145,22 @@ extension PaginatedList {
         }
 
         if !model.elements.isEmpty, model.hasNextPage {
-          if model.hasLoadingError {
-            Button("Error happened. Retry?") {
-              model.loadNextPage()
+          Group {
+            if model.isLoading {
+              Text("Loading...")
+                .listRowSeparator(.hidden)
+            } else if model.hasLoadingError {
+              Button("Error happened. Retry?") {
+                model.loadNextPage()
+              }
+              .buttonStyle(.borderedProminent)
             }
-          } else if model.isLoading {
-            ProgressView()
-              .frame(maxWidth: .infinity, alignment: .center)
           }
+          .frame(maxWidth: .infinity, alignment: .center)
+          .listRowSeparator(.hidden)
         }
       }
+      .listStyle(.plain)
       .overlay {
         if !model.didTryToLoadFirstPage, model.isLoading {
           ProgressView()
@@ -165,12 +170,16 @@ extension PaginatedList {
         if model.didTryToLoadFirstPage, model.elements.isEmpty {
           ContentUnavailableView {
             if model.hasLoadingError {
-              Text("Failed to load data")
+              Text("Oops! Something Went Wrong")
             } else {
-              Text(errorsConfiguration.noDataAvailable)
+              Text("No data available")
             }
           } description: {
-            Text("Try again later")
+            if model.hasLoadingError {
+              Text("We couldn’t load the content. Please check your internet connection or try again later")
+            } else {
+              Text("It looks like there’s nothing to display here right now. Try refreshing later for updates")
+            }
           } actions: {
             refreshButton
           }
@@ -182,21 +191,13 @@ extension PaginatedList {
       .onAppear {
         model.loadFirstPage()
       }
-      .alert("Refresh failed", isPresented: $model.showErrorAlert) {
-        Button("Try again") {
-          Task {
-            await refresh?()
-          }
-        }
-
-        Button("OK", role: .cancel) {}
-      }
+      .alert("Refresh failed", isPresented: $model.showRefreshFailureAlert) { /* No custom actions */ }
     }
 
     private var refreshButton: some SwiftUI.View {
       Button {
         Task {
-          await refresh?()
+          await model.refresh()
         }
       } label: {
         HStack {
@@ -210,18 +211,16 @@ extension PaginatedList {
       .disabled(model.isLoading)
     }
 
-    init(
+    public init(
       dataProvider: @escaping DataProvider<Element>,
       cellProvider: @escaping (Element) -> Cell,
-      fetchConfiguration: FetchConfiguration = .default,
-      errorsConfiguration: ErrorsConfiguration = .default
+      fetchConfiguration: FetchConfiguration = .default
     ) {
-      self._model = .init(wrappedValue: .init(
+      _model = .init(wrappedValue: .init(
         dataProvider: dataProvider,
         pageSize: fetchConfiguration.pageSize
       ))
       self.cellProvider = cellProvider
-      self.errorsConfiguration = errorsConfiguration
     }
   }
 }
@@ -230,7 +229,13 @@ extension PaginatedList {
   PaginatedList.View(
     dataProvider: { limit, skip in
       try await Task.sleep(for: .seconds(1))
-      return (0..<limit).map { index in
+
+      enum MockError: Error { case mock }
+      // 50% probability of error
+      guard Bool.random() else {
+        throw MockError.mock
+      }
+      return (0 ..< limit).map { index in
         "Item \(skip + index)"
       }
     },

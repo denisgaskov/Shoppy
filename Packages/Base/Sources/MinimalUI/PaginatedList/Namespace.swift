@@ -9,19 +9,11 @@ import Foundation
 public enum PaginatedList {}
 
 extension PaginatedList {
-  typealias DataProvider<Element> = (_ limit: Int, _ skip: Int) async throws -> [Element]
+  public typealias DataProvider<Element> = (_ limit: Int, _ skip: Int) async throws -> [Element]
 
-  struct FetchConfiguration {
+  public struct FetchConfiguration: Sendable {
     let pageSize: Int
 
-    static let `default` = FetchConfiguration(pageSize: 20)
-  }
-
-  struct ErrorsConfiguration {
-    let noDataAvailable: LocalizedStringResource
-
-    static let `default` = ErrorsConfiguration(
-      noDataAvailable: "No data available"
-    )
+    public static let `default` = Self(pageSize: 20)
   }
 }

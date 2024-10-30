@@ -21,7 +21,7 @@ extension Container {
 
 extension ProductsAPI {
   public protocol Provider: Sendable {
-    func getProducts(limit: Int, skip: Int) async throws(ShoppyNetwork.Error) -> [Response.Product]
+    func getProducts(limit: Int, skip: Int) async throws -> [Response.Product]
   }
 }
 
@@ -35,7 +35,7 @@ extension ProductsAPI {
     /// In real app, we should use xcconfig, xcsettings, or Swift code generation.
     private let host = "dummyjson.com"
 
-    func getProducts(limit: Int, skip: Int) async throws(ShoppyNetwork.Error) -> [Response.Product] {
+    func getProducts(limit: Int, skip: Int) async throws -> [Response.Product] {
       let request = ShoppyNetwork.Request(
         method: .get,
         host: host,
@@ -54,14 +54,12 @@ extension ProductsAPI {
 #if DEBUG
   extension ProductsAPI {
     struct PreviewProvider: ProductsAPI.Provider {
-      func getProducts(limit: Int, skip: Int) async throws(ShoppyNetwork.Error) -> [Response.Product] {
-        do {
-          try await Task.sleep(for: .seconds(1))
-        } catch { throw .unknown }
+      func getProducts(limit: Int, skip: Int) async throws -> [Response.Product] {
+        try await Task.sleep(for: .seconds(2))
 
         // 50% probability of error
         guard Bool.random() else {
-          throw .unknown
+          throw ShoppyNetwork.Error.unknown
         }
 
         return (0..<limit).map { index in

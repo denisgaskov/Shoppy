@@ -31,7 +31,7 @@ extension ShoppyNetwork {
     /// Query items, appended after path.
     public let queryItems: [String: String]
 
-    public init(method: HTTPMethod, host: String, path: [String], queryItems: [String : String]) {
+    public init(method: HTTPMethod, host: String, path: [String], queryItems: [String: String]) {
       self.method = method
       self.host = host
       self.path = path
@@ -43,8 +43,8 @@ extension ShoppyNetwork {
 // MARK: - HTTPMethod
 
 extension ShoppyNetwork.Request {
-  public enum HTTPMethod {
-    case get
+  public enum HTTPMethod: String {
+    case get = "GET"
   }
 }
 
@@ -72,6 +72,8 @@ extension ShoppyNetwork.Request {
   }
 
   var urlRequest: URLRequest {
-    URLRequest(url: url)
+    var request = URLRequest(url: url)
+    request.httpMethod = method.rawValue
+    return request
   }
 }
