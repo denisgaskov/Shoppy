@@ -7,122 +7,6 @@
 import MinimalFoundation
 import SwiftUI
 
-enum ListLoadingTrigger: String {
-  case firstPage
-  case newPage
-  case refresh
-}
-
-// MARK: - Model
-
-extension PaginatedList {
-  @MainActor
-  final class Model<Element: Sendable>: ObservableObject {
-    private let logger = Container.shared.logger.paginatedList()
-    private let dataProvider: DataProvider<Element>
-    private let pageSize: Int
-    private var page = 0
-
-    @Published
-    private var currentTask: Task<Void, Never>?
-
-    @Published
-    private(set) var elements: [Element] = []
-
-    @Published
-    private(set) var hasLoadingError = false
-
-    @Published
-    var showRefreshFailureAlert = false
-
-    @Published
-    private(set) var didTryToLoadFirstPage = false
-
-    @Published
-    private(set) var hasNextPage = true
-
-    var isLoading: Bool {
-      currentTask != nil
-    }
-
-    init(
-      dataProvider: @escaping DataProvider<Element>,
-      pageSize: Int
-    ) {
-      self.dataProvider = dataProvider
-      self.pageSize = pageSize
-    }
-
-    func loadFirstPage() {
-      // `loadFirstPage` can be invoked multiple times.
-      // E. g. we don't want to refresh the screen when used comes back from child screen,
-      // so store and check this state.
-      guard !didTryToLoadFirstPage else {
-        return
-      }
-
-      addTask(trigger: .firstPage)
-    }
-
-    func loadNextPage() {
-      guard !isLoading else { return }
-      addTask(trigger: .newPage)
-    }
-
-    func refresh() async {
-      currentTask?.cancel()
-      // Wait when `currentTask` is completely cancelled and is set to nil
-      await Task.yield()
-      addTask(trigger: .refresh)
-      _ = await currentTask?.result
-    }
-
-    // MARK: - Private
-
-    private func addTask(trigger: ListLoadingTrigger) {
-      logger.debug("Triggered loading: \(trigger.rawValue)")
-      currentTask = Task {
-        do {
-          let isRefresh = trigger == .refresh
-          let newElements = try await dataProvider(pageSize, isRefresh ? 0 : elements.count)
-          if isRefresh {
-            page = 0
-            elements.removeAll()
-          }
-
-          elements.append(contentsOf: newElements)
-          logger.debug("Loaded \(newElements.count) elements.")
-
-          // Use '>=' instead of '=', if API occasionally returns more then 'pageSize' items.
-          if newElements.count >= pageSize {
-            page += 1
-          } else {
-            logger.info("Loaded all data. Total: \(self.elements.count), last page: \(newElements.count).")
-            hasNextPage = false
-          }
-          hasLoadingError = false
-        } catch {
-          logger.error("Loading failed: \(error)")
-
-          // Ignore CancellationErrors, and don't show them in UI.
-          if !(error is CancellationError) {
-            hasLoadingError = true
-            if trigger == .refresh {
-              showRefreshFailureAlert = true
-            }
-          }
-        }
-
-        if trigger == .firstPage {
-          didTryToLoadFirstPage = true
-        }
-
-        currentTask = nil
-      }
-    }
-  }
-}
-
 // MARK: - View
 
 extension PaginatedList {
@@ -224,6 +108,8 @@ extension PaginatedList {
     }
   }
 }
+
+// MARK: - Preview
 
 #Preview {
   PaginatedList.View(
