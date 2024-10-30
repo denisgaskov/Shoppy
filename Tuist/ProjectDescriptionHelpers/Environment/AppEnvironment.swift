@@ -9,13 +9,11 @@ import ProjectDescription
 // MARK: - AppEnvironment
 
 public enum AppEnvironment: CaseIterable {
-  case debugSandbox
   case debugStaging
   case releaseProduction
 
   var postfix: String {
     switch self {
-      case .debugSandbox: "Sandbox"
       case .debugStaging: "Staging"
       case .releaseProduction: ""
     }

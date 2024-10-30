@@ -24,18 +24,6 @@
           }
         }
       }
-    },
-    "NSFaceIDUsageDescription" : {
-      "comment" : "Privacy - Face ID Usage Description",
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "To secure your sensitive data, this app uses Face ID for authentication when accessing your stored information."
-          }
-        }
-      }
     }
   },
   "version" : "1.0"

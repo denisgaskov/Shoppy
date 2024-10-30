@@ -15,10 +15,7 @@ public let targetSettings: Settings = .settings(
 
 private let build: SettingsDictionary = [
   "GENERATE_INFOPLIST_FILE": true,
-  "SWIFT_VERSION": "6.0",
-
-  // Recommended non-tuist-default settings by Xcode
-  "ENABLE_HARDENED_RUNTIME": true
+  "SWIFT_VERSION": "6.0"
 ]
 
 private let app: SettingsDictionary = [

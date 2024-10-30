@@ -9,7 +9,6 @@ import ProjectDescription
 extension AppEnvironment {
   var configurationName: ConfigurationName {
     switch self {
-      case .debugSandbox: "Debug Sandbox"
       case .debugStaging: "Debug Staging"
       case .releaseProduction: "Release Production"
     }
@@ -25,7 +24,6 @@ extension AppEnvironment {
 
   var configuration: Configuration {
     switch self {
-      case .debugSandbox: .debug(name: configurationName, settings: configurationSettings)
       case .debugStaging: .debug(name: configurationName, settings: configurationSettings)
       case .releaseProduction: .release(name: configurationName, settings: configurationSettings)
     }
@@ -37,9 +35,8 @@ extension AppEnvironment {
 extension AppEnvironment {
   private var bundleIdentifier: String {
     switch self {
-      case .debugSandbox: "com.denisgaskov.minimal.sandbox"
-      case .debugStaging: "com.denisgaskov.minimal.staging"
-      case .releaseProduction: "com.denisgaskov.minimal"
+      case .debugStaging: "com.denisgaskov.shoppy.staging"
+      case .releaseProduction: "com.denisgaskov.shoppy"
     }
   }
 

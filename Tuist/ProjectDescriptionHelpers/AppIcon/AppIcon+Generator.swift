@@ -46,7 +46,6 @@ extension AppIcon {
 extension AppEnvironment {
   fileprivate var overlayTextColor: Color {
     switch self {
-      case .debugSandbox: .purple
       case .debugStaging: .red
       case .releaseProduction: fatalError("Should not be executed")
     }

@@ -29,15 +29,14 @@ let project = Project(
         RunOnce.run()
         return consts.appName
       }(),
-      destinations: [.iPhone, .iPad, .mac],
+      destinations: .iOS,
       product: .app,
       // swiftformat:disable:next acronyms
       bundleId: "$(PRODUCT_BUNDLE_IDENTIFIER)",
-      deploymentTargets: .multiplatform(iOS: consts.iOSVersion, macOS: consts.macOSVersion),
+      deploymentTargets: .iOS(consts.iOSVersion),
       infoPlist: .dictionary(infoPlist),
       sources: ["App/Sources/**"],
       resources: ["App/Resources/**"],
-      entitlements: entitlements,
       dependencies: [
         .package(product: "Root", type: .runtime),
         .package(product: "Linter", type: .plugin)

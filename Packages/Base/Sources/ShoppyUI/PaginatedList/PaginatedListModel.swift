@@ -66,7 +66,7 @@ extension PaginatedList {
 
     func loadNextPage() {
       // If next page is still loading, do not interrupt it.
-      guard !isLoading else { return }
+      guard hasNextPage, !isLoading else { return }
       addTask(trigger: .newPage)
     }
 

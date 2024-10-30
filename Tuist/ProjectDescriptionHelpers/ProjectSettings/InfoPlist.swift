@@ -6,7 +6,7 @@
 
 import ProjectDescription
 
-public let infoPlist = app + launchScreen + permissions + macOS
+public let infoPlist = app + launchScreen
 
 private let app: [String: Plist.Value] = [:]
 
@@ -15,13 +15,4 @@ private let launchScreen: [String: Plist.Value] = [
     "UIImageName": "LaunchImage",
     "UIImageRespectsSafeAreaInsets": true
   ]
-]
-
-private let permissions: [String: Plist.Value] = [
-  // swiftlint:disable:next line_length
-  "NSFaceIDUsageDescription": "To secure your sensitive data, this app uses Face ID for authentication when accessing your stored information."
-]
-
-private let macOS: [String: Plist.Value] = [
-  "LSApplicationCategoryType": "public.app-category.entertainment"
 ]

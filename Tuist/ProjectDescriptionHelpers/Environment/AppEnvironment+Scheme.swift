@@ -26,7 +26,6 @@ extension AppEnvironment {
 
   private var isTestable: Bool {
     switch self {
-      case .debugSandbox: false
       case .debugStaging: true
       case .releaseProduction: false
     }

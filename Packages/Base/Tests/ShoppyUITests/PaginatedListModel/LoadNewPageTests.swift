@@ -59,6 +59,9 @@ extension PaginatedListModelTests {
       #expect(sut.showRefreshFailureAlert == false)
       #expect(sut.hasNextPage == false)
       #expect(sut.isLoading == false)
+
+      sut.loadNextPage()
+      #expect(sut.currentTask == nil, "should not create new task")
     }
 
     @Test

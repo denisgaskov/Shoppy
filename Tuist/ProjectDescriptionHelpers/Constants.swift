@@ -11,7 +11,6 @@ import ProjectDescription
 
 public struct Constants: Sendable {
   public let iOSVersion = "17.0"
-  public let macOSVersion = "14.0"
   public let appName = "Shoppy"
   public let appMarketingVersion = "1.0.0"
 
