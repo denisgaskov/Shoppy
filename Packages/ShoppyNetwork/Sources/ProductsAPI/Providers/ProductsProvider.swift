@@ -62,7 +62,7 @@ extension ProductsAPI {
           throw ShoppyNetwork.Error.unknown
         }
 
-        return (0..<limit).map { index in
+        return (0 ..< limit).map { index in
           let id = skip + index
           return Response.Product(
             title: "Lorem \(id)",

@@ -18,20 +18,6 @@
         "identifier" : "ShoppyNetworkTests",
         "name" : "ShoppyNetworkTests"
       }
-    },
-    {
-      "target" : {
-        "containerPath" : "container:Packages\/Tools",
-        "identifier" : "ShielderAppTests",
-        "name" : "ShielderAppTests"
-      }
-    },
-    {
-      "target" : {
-        "containerPath" : "container:Packages\/Base",
-        "identifier" : "MinimalFoundationTests",
-        "name" : "MinimalFoundationTests"
-      }
     }
   ],
   "version" : 1

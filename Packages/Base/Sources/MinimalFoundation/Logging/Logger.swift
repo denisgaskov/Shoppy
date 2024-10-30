@@ -11,7 +11,6 @@ import OSLog
 public enum LogCategory: String, Sendable, CaseIterable {
   case network
   case paginatedList
-  case productList
 }
 
 // MARK: - Container + Logger
@@ -21,13 +20,8 @@ public enum LogCategory: String, Sendable, CaseIterable {
 /// There's no significant performance drawback expected, as this struct does not contain any data.
 extension Container {
   public struct Logger: Sendable {
-
     public var network: Factory<os.Logger> {
       Container { os.Logger(category: .network) }
-    }
-
-    public var productList: Factory<os.Logger> {
-      Container { os.Logger(category: .productList) }
     }
 
     public var paginatedList: Factory<os.Logger> {
@@ -42,7 +36,7 @@ extension Container {
 
 extension Logger {
   fileprivate init(category: LogCategory) {
-    let bundleIdentifier = Container.shared.appEnvironment().bundleIdentifier
+    let bundleIdentifier = Bundle.main.bundleIdentifier ?? ""
     self.init(subsystem: bundleIdentifier, category: category.rawValue)
   }
 }

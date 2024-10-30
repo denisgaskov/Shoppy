@@ -9,6 +9,8 @@ import MinimalUI
 import ProductsAPI
 import SwiftUI
 
+/// An entry point of `ProductList` feature.
+/// Handles fetching products, pagination, refresh mechanism, and error handling.
 public struct ProductListView: View {
   private let api = Container.shared.productsAPI()
 

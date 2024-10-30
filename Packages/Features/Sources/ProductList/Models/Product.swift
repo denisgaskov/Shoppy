@@ -20,7 +20,7 @@ extension Product {
     name = product.title
     image = URL(string: product.thumbnail)
     price = product.price
-    // Since we don't have currency in API, for demo purposes we use USD.
+    // Since we don't have currency in API (but actualy we should!), for demo purposes we use USD.
     currencyCode = "USD"
     itemsInStockCount = product.stock
   }

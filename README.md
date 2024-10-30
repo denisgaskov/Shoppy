@@ -3,38 +3,14 @@
 <img src="App/Resources/Assets.xcassets/AppIcon.appiconset/AppIcon_MacOS_512@2x.png" style="height: 100px"/>
 
 ## Overview
-This is a template repository & project, which contains most of commonly-used components.
+This is a repository for **Shoppy** iOS project.
 Each choice has strong reasoning about, and is described below.
 
-## Tuist & SPM
-### [tuist.io](https://tuist.io)
-Tuist is an Xcode Project generation tool.
-
-Initially, it was created to simply managing of multiple targets/projects, and it stays it's main purpose.
-
-However, it's still very handy even in case of 1 target/project: it allows you to create human-readable Xcode project
-& target configuration.
-You can write easy-to-ready Swift code, attach comments with description "why this setting is needed", and you can
-remove Tuist (replace with Xcode) at any time.
-
-So, even if it's 'another 3rd-party dependency', it's a necessary evil.
-
+## SPM modularization
 ### [Swift Package Manager](https://www.swift.org/documentation/package-manager/)
 SPM is utilised to split app into submodules & targets. Why not Tuist?
-Because I'm still not 100% sure about necessary of Tuist in each app, and if I decide to remove it at any time,
-it will be much simpler to keep ready-to-use SPM targets instead of moving Tuist targets to SPM or managing Xcode targets.
-
-## SwiftLint, SwiftFormat
-There's no secret that code style is pretty important in any app, even if there's a single Engineer who develops it.
-To not spend a lot of time for it, 2 tools - linter & formatter - were developed for this project.
-Both are based on well-known [SwiftLint](https://github.com/realm/SwiftLint) and
-[SwiftFormat](https://github.com/nicklockwood/SwiftFormat).
-
-You can find more details in [README.md](Packages/Tools/README.md)
-
-_TODO_
-Since we can't reuse plugin in it's current form in multiple repos, it's ideal to rewrite it as a command line tool,
-e. g. `mise` or `asdf` plugin.
+Because I'm still not 100% sure about necessary of Tuist for each app, and if I decide to remove it later,
+it will be much simpler to keep ready-to-use SPM targets instead of refactoring Tuist projects to SPM or Xcode projects.
 
 ## Dependency Injection
 No doubt that testability is quite important, especially in large apps.
@@ -72,26 +48,9 @@ in favour of UIKit-based navigation.
 
 `Swift` is always set to latest stable version (`6.0` at the moment)
 
-## Environments and Shielder
-In most of cases, we need to support at least two environments - `Production` and `Staging` (or also called `Dev`).
-Each environment has it's own Xcode scheme and configuration, defining AppName, AppIcon, bundleIdentifier.
-Also, to quickly preview some functionality, sometimes it's useful to have mocked data & content: e. g. photo library,
-user location, and so on. For this, there's a `Sandbox` environment present.
-
-### AppIcon generation
-Mostly for the demo purpose (but still), there's a nice way to use a single set of icons (for `Production`),
-and generate `Staging` and `Sandbox` icons programmatically using SwiftUI.
-Because we're using Tuist for project generation, we can use it as well for AppIcon generation. See [AppIcon+View.swift](Tuist/ProjectDescriptionHelpers/AppIcon/AppIcon+View.swift) 
-
-### Shielder
-Not less important, differrent environments usually have differrent API keys, Server endpoints, etc.
-Usually this information is put inside `.xcconfig` files, and somehow is transferred to Swift using `Info.plist`.
-
-This is at least not secure approach (as `Info.plist` is a plain-text-like file), and not compile-time-safe as well.
-To fix this, I developed a `Shielder` - and SPM plugin, which generates Swift code based on values in `.env` file,
-which is gitignored.
-
-You can find more details in [README.md](Packages/Tools/README.md#Shielder)
+## MV / MVVM Architecture
+In this project I followed modern MVMVVM approach without explicit subscriptions and without Combine.
+It's a well-known and popular approach, based on this [thread](https://forums.developer.apple.com/forums/thread/699003).
 
 ## Extended Documentation
 - [Adding new module](Docs/adding_new_module.md)
@@ -100,7 +59,3 @@ You can find more details in [README.md](Packages/Tools/README.md#Shielder)
 ## Modules
 - [Base](Packages/Base/README.md)
 - [Features](Packages/Features/README.md)
-- [Tools](Packages/Tools/README.md)
-
-## Project-related services
-- [Figma](https://www.figma.com/file/RSbywcYh0q7cByztXpK9jh/Minimal)

@@ -7,6 +7,8 @@
 import MinimalUI
 import SwiftUI
 
+/// Product card, which desplays details of `Product` item.
+/// Supports light/dark ColorScheme, and responds to SizeCategory changes.
 struct ProductCard: View {
   let product: Product
 
@@ -39,7 +41,7 @@ struct ProductCard: View {
   private var image: some View {
     // Since caching is not required in this task, it's fine just to use AsyncImage.
     // In real scenario, it's adviced to use either modern 3rd party library,
-    // or to write custom in-house implementation with caching.
+    // or to write custom in-house implementation with caching, multithreading support, and parallel loading.
     AsyncImage(url: product.image) { image in
       image
         .resizable()

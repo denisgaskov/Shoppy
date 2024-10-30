@@ -9,7 +9,7 @@ let package = Package(
   platforms: [.iOS(.v17), .macOS(.v14)],
   products: [
     .plugin(name: "Linter", targets: ["Linter"]),
-    .plugin(name: "Formatter", targets: ["Formatter"]),
+    .plugin(name: "Formatter", targets: ["Formatter"])
   ],
   targets: [
     .plugin(

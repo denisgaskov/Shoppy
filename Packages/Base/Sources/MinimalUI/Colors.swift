@@ -7,5 +7,6 @@
 import SwiftUI
 
 extension Color {
+  /// A dynamic color, which depends on current ColorScheme
   public static let cardBackground = Color(uiColor: .secondarySystemBackground)
 }
