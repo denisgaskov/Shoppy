@@ -9,6 +9,7 @@ import OSLog
 // MARK: - LogCategory
 
 public enum LogCategory: String, Sendable, CaseIterable {
+  case imageLoader
   case network
   case paginatedList
 }
@@ -20,6 +21,10 @@ public enum LogCategory: String, Sendable, CaseIterable {
 /// There's no significant performance drawback expected, as this struct does not contain any data.
 extension Container {
   public struct Logger: Sendable {
+    public var imageLoader: Factory<os.Logger> {
+      Container { os.Logger(category: .imageLoader) }
+    }
+
     public var network: Factory<os.Logger> {
       Container { os.Logger(category: .network) }
     }

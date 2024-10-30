@@ -10,6 +10,7 @@ import SwiftUI
 
 /// Product card, which desplays details of `Product` item.
 /// Supports light/dark ColorScheme, and responds to SizeCategory changes.
+/// Supports image loading interruption (cancellation), when card goes off the screen.
 struct ProductCard: View {
   @State
   private var thumbnail: UIImage?

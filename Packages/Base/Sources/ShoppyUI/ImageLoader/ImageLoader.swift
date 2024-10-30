@@ -18,8 +18,7 @@ extension Container {
 // MARK: - ImageLoadingError
 
 enum ImageLoadingError: Error {
-  case invalidURL
-  case downsamplingFailed
+  case invalidDataFormat
 }
 
 // MARK: - ImageLoader
@@ -30,38 +29,55 @@ public protocol ImageLoader: Sendable {
 
 // MARK: - DefaultImageLoader
 
+/// # Description
+/// Loads and downsamples given image
+///
+/// ## Details
+/// In that particular case I suppose it's better to use `URLSession` + `UIGraphicsImageRenderer`,
+/// instead of `CGImageSourceCreateThumbnailAtIndex`, because it's non-interrupatble (which is quite important).
+/// Also, performance of `CGImageSourceCreateThumbnailAtIndex` is not always better then `UIGraphicsImageRenderer`
+/// as per https://nshipster.com/image-resizing
+///
+/// ## Disclaimer
+/// It's still not the best solution in my opinion. We have to load full image from the server,
+/// so it's adviced to use server-side image scaling / downsampling instead.
+///
+/// ## Points or Pixels
+/// In task definition it was said "64x64 **pixels**".
+/// I assume it was meant logical "points" and not raw "pixels" - othwerwise the image
+/// will be either super small, or super blurry on hi-DPI devices.
 actor DefaultImageLoader: ImageLoader {
   private let session = URLSession.shared
-
-  // In task definition it was said "64x64 **pixels**".
-  // I suppose it was meant logical "points" and not raw "pixels" -
-  // the image will be either super small, or super blurry.
-  // However, I implemented both approaches - just set `screenScale` to `1` below.
+  private let logger = Container.shared.logger.imageLoader()
   private let targetSize = CGSize(width: 64, height: 64)
 
   func load(from url: URL) async throws -> UIImage {
-    let imageSourceOptions = [kCGImageSourceShouldCache: false] as CFDictionary
-    guard let imageSource = CGImageSourceCreateWithURL(url as CFURL, imageSourceOptions) else {
-      throw ImageLoadingError.invalidURL
+    let imageID = "\"\(url.deletingLastPathComponent().lastPathComponent)\""
+    logger.debug("Loading \(imageID) on \(Thread.current)")
+
+    let (data, _) = try await session.data(from: url)
+    guard let image = UIImage(data: data) else {
+      throw ImageLoadingError.invalidDataFormat
     }
 
-    // Uncomment line below, if you want to use "pixels"
-    // let screenScale: CGFloat = 1
-    let screenScale = await UIScreen.main.scale
-    let maxDimentionInPixels = max(targetSize.width, targetSize.height) * screenScale
+    try Task.checkCancellation()
 
-    let downsampledOptions = [
-      kCGImageSourceCreateThumbnailFromImageAlways: true,
-      kCGImageSourceShouldCacheImmediately: true,
-      kCGImageSourceCreateThumbnailWithTransform: true,
-      kCGImageSourceThumbnailMaxPixelSize: maxDimentionInPixels
-    ] as CFDictionary
-
-    guard let downsampledImage = CGImageSourceCreateThumbnailAtIndex(imageSource, 0, downsampledOptions) else {
-      throw ImageLoadingError.downsamplingFailed
+    let rect = CGRect(origin: .zero, size: aspectFitSize(forImageSize: image.size, inBoxSize: targetSize))
+    let result = UIGraphicsImageRenderer(size: rect.size).image { _ in
+      image.draw(in: rect)
     }
 
-    return UIImage(cgImage: downsampledImage)
+    logger.debug("Downsampled \(imageID)")
+    return result
+  }
+
+  private func aspectFitSize(forImageSize imageSize: CGSize, inBoxSize boxSize: CGSize) -> CGSize {
+    let widthRatio = boxSize.width / imageSize.width
+    let heightRatio = boxSize.height / imageSize.height
+    let scale = min(widthRatio, heightRatio) // Choose the smaller ratio to fit within the box
+    let targetWidth = imageSize.width * scale
+    let targetHeight = imageSize.height * scale
+    return CGSize(width: targetWidth, height: targetHeight)
   }
 }
 
