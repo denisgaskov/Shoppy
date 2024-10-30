@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 55;
+	objectVersion = 56;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -30,11 +30,10 @@
 /* Begin PBXFileReference section */
 		03ECA474F576BAB582407957 /* Shoppy.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Shoppy.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		0494D3C0B66A582F933044DC /* Base */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Base; path = Packages/Base; sourceTree = "<group>"; };
-		0E1173304C294FCFA72D83BB /* InfoPlist.xcstrings */ = {isa = PBXFileReference; path = InfoPlist.xcstrings; sourceTree = "<group>"; };
-		66E2FB913FCFDDB8B854C256 /* Tools */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Tools; path = Packages/Tools; sourceTree = "<group>"; };
-		9603E065D07E3076052C30E6 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		0E1173304C294FCFA72D83BB /* InfoPlist.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = InfoPlist.xcstrings; sourceTree = "<group>"; };
+		9603E065D07E3076052C30E6 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		B2AD8F8F5C2832905B0E7B4A /* ShoppyNetwork */ = {isa = PBXFileReference; lastKnownFileType = folder; name = ShoppyNetwork; path = Packages/ShoppyNetwork; sourceTree = "<group>"; };
-		BD43A5167472ADDDE7F462CA /* AppTestPlan.xctestplan */ = {isa = PBXFileReference; path = AppTestPlan.xctestplan; sourceTree = "<group>"; };
+		BD43A5167472ADDDE7F462CA /* AppTestPlan.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = AppTestPlan.xctestplan; sourceTree = "<group>"; };
 		DD992C399B666F2559F68CA7 /* Shoppy-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "Shoppy-Info.plist"; sourceTree = "<group>"; };
 		E2C1B3B3511DE86879FD0CE1 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		F6E2CC6744E377F349763876 /* App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App.swift; sourceTree = "<group>"; };
@@ -103,7 +102,6 @@
 				0494D3C0B66A582F933044DC /* Base */,
 				F9A83F63EFFD0D9606FF98E2 /* Features */,
 				B2AD8F8F5C2832905B0E7B4A /* ShoppyNetwork */,
-				66E2FB913FCFDDB8B854C256 /* Tools */,
 			);
 			name = Packages;
 			sourceTree = "<group>";
@@ -157,7 +155,6 @@
 			buildRules = (
 			);
 			dependencies = (
-				A2060F76D7B3DE77CB7CAD20 /* PBXTargetDependency */,
 			);
 			name = Shoppy;
 			packageProductDependencies = (
@@ -174,8 +171,6 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
-				TargetAttributes = {
-				};
 			};
 			buildConfigurationList = E16F26E6D05828DD85550C56 /* Build configuration list for PBXProject "Shoppy" */;
 			compatibilityVersion = "Xcode 14.0";
@@ -219,20 +214,13 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
-/* Begin PBXTargetDependency section */
-		A2060F76D7B3DE77CB7CAD20 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			productRef = 7A3B42F5942B3B9F5FF37C2B /* Linter */;
-		};
-/* End PBXTargetDependency section */
-
 /* Begin XCBuildConfiguration section */
 		11707837A336443B84DABF6B /* Release Production */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 82;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 2F488A453D;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -261,7 +249,7 @@
 			buildSettings = {
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 82;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 2F488A453D;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -278,10 +266,7 @@
 				SUPPORTS_MACCATALYST = NO;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = YES;
 				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
-				SWIFT_ACTIVE_COMPILATION_CONDITIONS = (
-					"$(inherited)",
-					DEBUG,
-				);
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) DEBUG";
 				SWIFT_COMPILATION_MODE = singlefile;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 6.0;
@@ -431,10 +416,6 @@
 /* End XCConfigurationList section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		7A3B42F5942B3B9F5FF37C2B /* Linter */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = "plugin:Linter";
-		};
 		F85BD86308321A51F624D11E /* Root */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = Root;

@@ -5,12 +5,6 @@
       location = "group:Shoppy.xcodeproj">
    </FileRef>
    <FileRef
-      location = "group:.swiftformat.yml">
-   </FileRef>
-   <FileRef
-      location = "group:.swiftlint.yml">
-   </FileRef>
-   <FileRef
       location = "group:Docs">
    </FileRef>
    <FileRef
