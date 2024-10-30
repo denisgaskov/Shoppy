@@ -1,4 +1,4 @@
-# Minimal
+# Shoppy
 
 <img src="App/Resources/Assets.xcassets/AppIcon.appiconset/AppIcon_MacOS_512@2x.png" style="height: 100px"/>
 

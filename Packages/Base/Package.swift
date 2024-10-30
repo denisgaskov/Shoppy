@@ -9,8 +9,8 @@ let package = Package(
   name: "Base",
   platforms: [.iOS(.v17), .macOS(.v14)],
   products: [
-    .library(name: "MinimalFoundation", targets: ["MinimalFoundation"]),
-    .library(name: "MinimalUI", targets: ["MinimalUI"])
+    .library(name: "ShoppyFoundation", targets: ["ShoppyFoundation"]),
+    .library(name: "ShoppyUI", targets: ["ShoppyUI"])
   ],
   dependencies: [
     // The only one external dependency used.
@@ -19,18 +19,18 @@ let package = Package(
   ],
   targets: [
     .target(
-      name: "MinimalFoundation",
+      name: "ShoppyFoundation",
       dependencies: [.product(name: "Factory", package: "Factory")]
     ),
 
-    .target(name: "MinimalUI", dependencies: [.foundation]),
-    .testTarget(name: "MinimalUITests", dependencies: [.ui])
+    .target(name: "ShoppyUI", dependencies: [.foundation]),
+    .testTarget(name: "ShoppyUITests", dependencies: [.ui])
   ]
 )
 
 // MARK: - Aliases
 
 extension Target.Dependency {
-  static var foundation: Self { "MinimalFoundation" }
-  static var ui: Self { "MinimalUI" }
+  static var foundation: Self { "ShoppyFoundation" }
+  static var ui: Self { "ShoppyUI" }
 }

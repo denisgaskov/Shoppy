@@ -1,11 +1,11 @@
 //
-//  Minimal
+//  Shoppy
 //  Created by Denis Gaskov
 //  Copyright © 2024 Denis Gaskov. All rights reserved.
 //
 
-import MinimalFoundation
-import MinimalUI
+import ShoppyFoundation
+import ShoppyUI
 import ProductsAPI
 import SwiftUI
 

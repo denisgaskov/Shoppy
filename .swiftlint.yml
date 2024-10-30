@@ -84,7 +84,7 @@ no_empty_block:
 file_header:
   required_pattern: |
                     \/\/
-                    \/\/  Minimal
+                    \/\/  Shoppy
                     \/\/  Created by .*?
                     \/\/  Copyright © 2024 Denis Gaskov\. All rights reserved\.
                     \/\/

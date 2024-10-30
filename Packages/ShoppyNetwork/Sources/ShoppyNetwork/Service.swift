@@ -1,11 +1,11 @@
 //
-//  Minimal
+//  Shoppy
 //  Created by Denis Gaskov
 //  Copyright © 2024 Denis Gaskov. All rights reserved.
 //
 
 import Foundation
-import MinimalFoundation
+import ShoppyFoundation
 
 extension Container {
   public var networkService: Factory<ShoppyNetwork.Service> {

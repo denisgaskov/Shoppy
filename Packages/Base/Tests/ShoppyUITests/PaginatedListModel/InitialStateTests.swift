@@ -1,11 +1,11 @@
 //
-//  Minimal
+//  Shoppy
 //  Created by Denis Gaskov
 //  Copyright © 2024 Denis Gaskov. All rights reserved.
 //
 
 import Testing
-@testable import MinimalUI
+@testable import ShoppyUI
 
 extension PaginatedListModelTests {
   @MainActor

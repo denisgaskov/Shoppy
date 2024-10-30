@@ -21,7 +21,7 @@ let package = Package(
     .target(
       name: "ShoppyNetwork",
       dependencies: [
-        .product(name: "MinimalFoundation", package: "Base")
+        .product(name: "ShoppyFoundation", package: "Base")
       ]
     ),
     .testTarget(

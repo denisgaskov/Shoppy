@@ -15,8 +15,8 @@
     {
       "target" : {
         "containerPath" : "container:Packages\/Base",
-        "identifier" : "MinimalUITests",
-        "name" : "MinimalUITests"
+        "identifier" : "ShoppyUITests",
+        "name" : "ShoppyUITests"
       }
     },
     {

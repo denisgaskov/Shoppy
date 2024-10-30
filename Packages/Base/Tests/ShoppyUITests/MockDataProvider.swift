@@ -1,20 +1,21 @@
 //
-//  Minimal
+//  Shoppy
 //  Created by Denis Gaskov
 //  Copyright © 2024 Denis Gaskov. All rights reserved.
 //
 
-@testable import MinimalUI
+@testable import ShoppyUI
 
 @MainActor
 final class MockDataProvider {
-  private var continuation: CheckedContinuation<[String], Error>!
-
-  enum MockError: Error {
+  private enum MockError: Error {
     case mock
   }
 
-  func load(limit: Int, skip: Int) async throws -> [String] {
+  // swiftlint:disable:next implicitly_unwrapped_optional
+  private var continuation: CheckedContinuation<[String], Error>!
+
+  func load(limit _: Int, skip _: Int) async throws -> [String] {
     try await withCheckedThrowingContinuation { continuation in
       self.continuation = continuation
     }

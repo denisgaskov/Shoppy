@@ -1,10 +1,10 @@
 //
-//  Minimal
+//  Shoppy
 //  Created by Denis Gaskov
 //  Copyright © 2024 Denis Gaskov. All rights reserved.
 //
 
-import MinimalUI
+import ShoppyUI
 import SwiftUI
 
 /// Product card, which desplays details of `Product` item.

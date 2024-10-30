@@ -29,7 +29,7 @@ let package = Package(
 // MARK: - Aliases
 
 extension Target.Dependency {
-  static var foundation: Self { .product(name: "MinimalFoundation", package: "Base") }
-  static var ui: Self { .product(name: "MinimalUI", package: "Base") }
+  static var foundation: Self { .product(name: "ShoppyFoundation", package: "Base") }
+  static var ui: Self { .product(name: "ShoppyUI", package: "Base") }
   static var productsAPI: Self { .product(name: "ProductsAPI", package: "ShoppyNetwork") }
 }
