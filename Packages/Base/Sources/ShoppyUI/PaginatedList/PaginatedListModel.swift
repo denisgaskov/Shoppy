@@ -82,6 +82,11 @@ extension PaginatedList {
       // We use `async` signature and `await` for result, so SwiftUI's `refreshable` modifier can show running task.
       _ = await currentTask?.result
     }
+
+    func cancelCurrentTask() {
+      currentTask?.cancel()
+      currentTask = nil
+    }
   }
 }
 

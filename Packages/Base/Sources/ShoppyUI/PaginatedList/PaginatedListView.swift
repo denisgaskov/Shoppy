@@ -68,7 +68,17 @@ extension PaginatedList {
               Text("It looks like there’s nothing to display here right now. Try refreshing later for updates")
             }
           } actions: {
-            refreshButton
+            HStack {
+              refreshButton
+
+              // Just for demo purposes (as requested in task).
+              // In real app, it's adviced not to use this UX.
+              if model.isLoading {
+                Button("Cancel") {
+                  model.cancelCurrentTask()
+                }
+              }
+            }
           }
         }
       }
