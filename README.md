@@ -1,6 +1,6 @@
 # Shoppy
 
-<img src="App/Resources/Assets.xcassets/AppIcon.appiconset/AppIcon_MacOS_512@2x.png" style="height: 100px"/>
+<img src="App/Resources/Assets.xcassets/AppIcon.appiconset/AppIcon_iOS_Any.png" style="height: 100px"/>
 
 ## Overview
 This is a repository for **Shoppy** iOS project.
