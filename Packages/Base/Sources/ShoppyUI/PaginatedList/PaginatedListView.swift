@@ -28,21 +28,7 @@ extension PaginatedList {
             }
         }
 
-        if model.hasNextPage {
-          // If more pages are available, add a footer which is either 'Loading' or 'Error' (recoverable) state.
-          Group {
-            if model.isLoading {
-              Text("Loading...")
-            } else if model.hasLoadingError {
-              Button("Error happened. Retry?") {
-                model.loadNextPage()
-              }
-              .buttonStyle(.borderedProminent)
-            }
-          }
-          .frame(maxWidth: .infinity, alignment: .center)
-          .listRowSeparator(.hidden)
-        }
+        loadingFooter
       }
       .listStyle(.plain)
       .overlay {
@@ -52,35 +38,7 @@ extension PaginatedList {
         }
       }
       .overlay {
-        // If first page was loaded (with either empty content or error),
-        // show ContentUnavailableView with 'Refresh' button.
-        if model.didTryToLoadFirstPage, model.elements.isEmpty {
-          ContentUnavailableView {
-            if model.hasLoadingError {
-              Text("Oops! Something Went Wrong")
-            } else {
-              Text("No data available")
-            }
-          } description: {
-            if model.hasLoadingError {
-              Text("We couldn’t load the content. Please check your internet connection or try again later")
-            } else {
-              Text("It looks like there’s nothing to display here right now. Try refreshing later for updates")
-            }
-          } actions: {
-            HStack {
-              refreshButton
-
-              // Just for demo purposes (as requested in task).
-              // In real app, it's adviced not to use this UX.
-              if model.isLoading {
-                Button("Cancel") {
-                  model.cancelCurrentTask()
-                }
-              }
-            }
-          }
-        }
+        contentUnavailableView
       }
       .refreshable {
         await model.refresh()
@@ -91,6 +49,62 @@ extension PaginatedList {
       .alert("Refresh failed", isPresented: $model.showRefreshFailureAlert) {
         // Do not provide any custom actions.
         // User can refresh again using same pull-to-refresh mechanism.
+      }
+    }
+
+    // MARK: LoadingFooter
+
+    @ViewBuilder
+    private var loadingFooter: some SwiftUI.View {
+      if model.hasNextPage {
+        // If more pages are available, add a footer which is either 'Loading' or 'Error' (recoverable) state.
+        Group {
+          if model.isLoading {
+            Text("Loading...")
+          } else if model.hasLoadingError {
+            Button("Error happened. Retry?") {
+              model.loadNextPage()
+            }
+            .buttonStyle(.borderedProminent)
+          }
+        }
+        .frame(maxWidth: .infinity, alignment: .center)
+        .listRowSeparator(.hidden)
+      }
+    }
+
+    // MARK: ContentUnavailable
+
+    @ViewBuilder
+    private var contentUnavailableView: some SwiftUI.View {
+      // If first page was loaded (with either empty content or error),
+      // show ContentUnavailableView with 'Refresh' button.
+      if model.didTryToLoadFirstPage, model.elements.isEmpty {
+        ContentUnavailableView {
+          if model.hasLoadingError {
+            Text("Oops! Something Went Wrong")
+          } else {
+            Text("No data available")
+          }
+        } description: {
+          if model.hasLoadingError {
+            Text("We couldn’t load the content. Please check your internet connection or try again later")
+          } else {
+            Text("It looks like there’s nothing to display here right now. Try refreshing later for updates")
+          }
+        } actions: {
+          HStack {
+            refreshButton
+
+            // Just for demo purposes (as requested in task).
+            // In real app, it's adviced not to use this UX.
+            if model.isLoading {
+              Button("Cancel") {
+                model.cancelCurrentTask()
+              }
+            }
+          }
+        }
       }
     }
 
@@ -110,6 +124,8 @@ extension PaginatedList {
       }
       .disabled(model.isLoading)
     }
+
+    // MARK: Init
 
     public init(
       dataProvider: @escaping DataProvider<Element>,

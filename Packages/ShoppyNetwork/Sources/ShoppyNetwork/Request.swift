@@ -26,7 +26,7 @@ extension ShoppyNetwork {
     /// - https://example.com
     public let host: String
     /// The path components, used for request.
-    /// All component will be joined using `/`.
+    /// All components will be joined using `/`.
     public let path: [String]
     /// Query items, appended after path.
     public let queryItems: [String: String]

@@ -17,9 +17,9 @@ extension PaginatedList.Model {
   }
 }
 
-extension PaginatedList {
-  // MARK: - Model
+// MARK: - Model
 
+extension PaginatedList {
   @MainActor
   final class Model<Element: Sendable>: ObservableObject {
     private let logger = Container.shared.logger.paginatedList()
@@ -39,6 +39,11 @@ extension PaginatedList {
     @Published
     var showRefreshFailureAlert = false
 
+    /// `True` if loading of the first page has completed, regardless of success or failure; `False` otherwise.
+    ///
+    /// The `loadFirstPage` method can be called multiple times - on `onAppear`.
+    /// For example, when the user returns from a child screen, we may want to avoid refreshing the screen,
+    /// so we store and check this state.
     @Published
     private(set) var didTryToLoadFirstPage = false
 
@@ -57,9 +62,6 @@ extension PaginatedList {
     // MARK: - Actions
 
     func loadFirstPage() {
-      // `loadFirstPage` can be invoked multiple times.
-      // We don't want to refresh the screen when used comes back from child screen,
-      // so store and check this state.
       guard !didTryToLoadFirstPage, !isLoading else { return }
       addTask(trigger: .firstPage)
     }

@@ -47,7 +47,7 @@ extension ShoppyNetwork {
         logger.info("Request [\(request.path)] completed.")
         return decoded
       } catch {
-        logger.error("Network error: [\(request.path)] - \(error)")
+        logger.error("Fetching error: [\(request.path)] - \(error)")
         throw ShoppyNetwork.Error.unknown
       }
     }
