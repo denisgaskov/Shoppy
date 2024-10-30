@@ -16,6 +16,7 @@ struct ProductCard: View {
   private var thumbnail: UIImage?
 
   private let imageLoader = Container.shared.imageLoader()
+  private let imageLoaderLogger = Container.shared.logger.imageLoader()
 
   let product: Product
 
@@ -61,7 +62,16 @@ struct ProductCard: View {
     .frame(width: 64, height: 64)
     .task {
       if let imageURL = product.image {
-        thumbnail = try? await imageLoader.load(from: imageURL)
+        do {
+          thumbnail = try await imageLoader.load(from: imageURL)
+        } catch {
+          let id = imageURL.deletingLastPathComponent().lastPathComponent
+          if error is CancellationError {
+            imageLoaderLogger.debug("Loading image [\(id)] cancelled.")
+          } else {
+            imageLoaderLogger.error("Failed to load image [\(id)]: \(error)")
+          }
+        }
       }
     }
   }

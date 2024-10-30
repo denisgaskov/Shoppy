@@ -18,7 +18,7 @@ extension Container {
 // MARK: - ImageLoadingError
 
 enum ImageLoadingError: Error {
-  case invalidDataFormat
+  case invalidDataFormat(dataLength: Int)
 }
 
 // MARK: - ImageLoader
@@ -47,23 +47,33 @@ actor DefaultImageLoader: ImageLoader {
   private let targetSize = CGSize(width: 64, height: 64)
 
   func load(from url: URL) async throws -> UIImage {
-    let imageID = "\"\(url.deletingLastPathComponent().lastPathComponent)\""
+    let imageID = "[\(url.deletingLastPathComponent().lastPathComponent)]"
     logger.debug("Loading \(imageID) on \(Thread.current)")
 
-    let (data, _) = try await session.data(from: url)
-    guard let image = UIImage(data: data) else {
-      throw ImageLoadingError.invalidDataFormat
+    do {
+      let (data, _) = try await session.data(from: url)
+      guard let image = UIImage(data: data) else {
+        // Use debug level to keep performance in release builds.
+        logger.debug("Invalid data format for \(imageID). Data: \(data.base64EncodedString())")
+        throw ImageLoadingError.invalidDataFormat(dataLength: data.count)
+      }
+
+      try Task.checkCancellation()
+
+      let rect = CGRect(origin: .zero, size: aspectFitSize(forImageSize: image.size, inBoxSize: targetSize))
+      let result = UIGraphicsImageRenderer(size: rect.size).image { _ in
+        image.draw(in: rect)
+      }
+
+      logger.debug("Downsampled \(imageID)")
+      return result
+    } catch {
+      let nsError = error as NSError
+      if nsError.domain == NSURLErrorDomain, nsError.code == NSURLErrorCancelled {
+        throw CancellationError()
+      }
+      throw error
     }
-
-    try Task.checkCancellation()
-
-    let rect = CGRect(origin: .zero, size: aspectFitSize(forImageSize: image.size, inBoxSize: targetSize))
-    let result = UIGraphicsImageRenderer(size: rect.size).image { _ in
-      image.draw(in: rect)
-    }
-
-    logger.debug("Downsampled \(imageID)")
-    return result
   }
 
   private func aspectFitSize(forImageSize imageSize: CGSize, inBoxSize boxSize: CGSize) -> CGSize {
