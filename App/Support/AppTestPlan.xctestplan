@@ -1,0 +1,52 @@
+{
+  "configurations" : [
+    {
+      "id" : "64BB4EFC-BA81-4AB0-B043-C66BE1327FE6",
+      "name" : "Configuration 1",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "testTimeoutsEnabled" : true
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:Packages\/Features",
+        "identifier" : "LaunchTests",
+        "name" : "LaunchTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:Packages\/Tools",
+        "identifier" : "ShielderAppTests",
+        "name" : "ShielderAppTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:Packages\/Base",
+        "identifier" : "MinimalUITests",
+        "name" : "MinimalUITests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:Packages\/Base",
+        "identifier" : "MinimalSharedServicesTests",
+        "name" : "MinimalSharedServicesTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:Packages\/Base",
+        "identifier" : "MinimalFoundationTests",
+        "name" : "MinimalFoundationTests"
+      }
+    }
+  ],
+  "version" : 1
+}

@@ -1,0 +1,33 @@
+# disable default rules
+# --disable redundantLet # doesn't work in ViewBuilders: `let _ = print("Debug")`
+
+# opt-in rules
+--enable acronyms
+--enable blankLineAfterSwitchCase
+--enable blankLinesBetweenImports
+--enable blockComments
+--enable docComments
+--enable markTypes
+--enable redundantProperty
+--enable sortSwitchCases # could be removed if there're too many false positives; companion for sorted_enum_cases
+--enable wrapEnumCases
+--enable wrapMultilineConditionalAssignment
+
+# options
+--commas inline
+--extensionacl on-declarations
+
+--funcattributes prev-line
+
+--importgrouping testable-last
+--indent 2
+--indentcase true
+
+--patternlet inline
+
+--typeattributes prev-line
+--storedvarattrs prev-line
+--computedvarattrs prev-line
+
+# swift version
+--swiftversion 6.0

@@ -1,0 +1,23 @@
+## User settings
+xcuserdata/
+
+## App packaging
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+## MacOS
+.DS_Store
+
+## Projects
+*.xcodeproj
+*.xcworkspace
+
+## Secrets (.env files)
+.env
+
+## Tuist derived files
+Derived/
+
+## Tuist managed dependencies
+Tuist/Dependencies
